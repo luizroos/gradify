@@ -1,16 +1,3 @@
-# gradle-project-engine
-
-curl -Lo ./gpectl https://github.com/luizroos/gradle-project-engine/blob/main/client-tool/gpectl
-chmod +x ./gpectl
-
-sudo mv ./gpectl /usr/local/bin/gpectl
-ou
-export PATH="$(pwd):$PATH"
-
-// completion
-echo "source <(gpectl completion | tr -d '\r')" >> ~/.bashrc
-
-
 # Gradle Project Engine
 
 ---
