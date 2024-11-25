@@ -1,0 +1,23 @@
+#!/bin/bash
+DOCKER_IMAGE_NAME=gpe
+DOCKER_IMAGE_VERSION=1.0
+DOCKER_IMAGE="$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION"
+HOST_JVM_VOLUME="/usr/lib/host_jvm"
+USER_UID=$(id -u)
+USER_GID=$(id -g)
+
+# O primeiro argumento passado para o script será encaminhado para o Docker run
+COMMAND="$1"
+shift  # Remove o primeiro argumento (comando) para que os outros possam ser passados para o contêiner
+
+docker run -it --rm \
+  --name $DOCKER_IMAGE_NAME \
+  -v "$(pwd):/project" \
+  -v $JAVA_HOME:$HOST_JVM_VOLUME \
+  -e "JAVA_HOME=$HOST_JVM_VOLUME" \
+  -e "HOST_USER_UID=$USER_UID" \
+  -e "HOST_USER_GID=$USER_GID" \
+  "$DOCKER_IMAGE" \
+  $COMMAND "$@"
+
+#  -v "$HOME/.gradle":/root/.gradle \
