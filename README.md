@@ -59,7 +59,7 @@ Tudo junto:
 gradifyctl gradle demo-project v1 > project-config.yaml && gradifyctl gradle create spring-app && gradifyctl gradle update keep-alive
 ```
 
-## Alguns TODO:
+## Alguns TODOs:
 
 - Criar documentação do arquivo project-config.yaml.
 - O update só atualia os arquivos do gradle, não remove nem adiciona novos modulos declarados no project-config.yaml, talvez vale fazer isso já tbm (adicionar).
