@@ -46,10 +46,17 @@ Crie a estrutura de diretórios da aplicação (spring-app vai gerar umas classe
 gradifyctl gradle create spring-app
 ```
 
-Atualize project-config.yaml, mantendo um listener para atualizar os arquivos do projeto:
+Atualize project-config.yaml e então execute update para atualizar os arquivos gradle do projeto:
+```bash
+gradifyctl gradle update
+```
+
+Ou então, se quiser que a atualização seja feita automaticamente:
 ```bash
 gradifyctl gradle update keep-alive
 ```
+
+TODO: isso só atualiza o gradle, não remove nem adiciona novos modulos, talvez vale fazer isso já tbm (adicionar, não remover)
 
 Tudo junto:
 ```bash
