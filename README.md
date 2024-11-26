@@ -2,6 +2,8 @@
 
 ---
 
+Testes proprios para manter templates para projetos que crio, bem como, uma forma mais automática de atualizar as ferramentas de build (no caso, o gradle apenas hehe).
+
 ## Instalação
 
 ```bash
@@ -15,9 +17,7 @@ chmod +x ./gradifyctl
 ```bash  
 export PATH="$(pwd):$PATH"
 ```
-
 ou 
-
 ```bash
 sudo mv ./gradifyctl /usr/local/bin/gradifyctl
 ```
@@ -32,28 +32,26 @@ echo "source <(gradifyctl completion bash | tr -d '\r')" >> ~/.bashrc
 source ~/.bashrc
 ```
 
+TODO: tirar a necessidade de  tr -d '\r' 
+
 ## Primeiro projeto
 
 Em uma pasta vazia, gere um arquivo de exemplo de configuração de um projeto:
-
 ```bash
 gradifyctl gradle demo-project v1 > project-config.yaml
 ```
 
 Crie a estrutura de diretórios da aplicação (spring-app vai gerar umas classes de main para cada app):
-
 ```bash
 gradifyctl gradle create spring-app
 ```
 
 Atualize project-config.yaml, mantendo um listener para atualizar os arquivos do projeto:
-
 ```bash
 gradifyctl gradle update keep-alive
 ```
 
 Tudo junto:
-
 ```bash
 gradifyctl gradle demo-project v1 > project-config.yaml && gradifyctl gradle create spring-app && gradifyctl gradle update keep-alive
 ```
