@@ -2,7 +2,7 @@
 
 ---
 
-Testes proprios para manter templates para projetos que crio, bem como, uma forma mais automática de atualizar as ferramentas de build (no caso, o gradle apenas hehe).
+Ferramenta minha para manter templates para projetos que crio, bem como, uma forma mais automática de atualizar as ferramentas de build (no caso, o gradle apenas hehe).
 
 ## Instalação
 
@@ -32,8 +32,6 @@ echo "source <(gradifyctl completion bash | tr -d '\r')" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-TODO: tirar a necessidade de  tr -d '\r' 
-
 ## Primeiro projeto
 
 Em uma pasta vazia, gere um arquivo de exemplo de configuração de um projeto:
@@ -56,9 +54,18 @@ Ou então, se quiser que a atualização seja feita automaticamente:
 gradifyctl gradle update keep-alive
 ```
 
-TODO: isso só atualiza o gradle, não remove nem adiciona novos modulos, talvez vale fazer isso já tbm (adicionar, não remover)
-
 Tudo junto:
 ```bash
 gradifyctl gradle demo-project v1 > project-config.yaml && gradifyctl gradle create spring-app && gradifyctl gradle update keep-alive
 ```
+
+## Alguns TODO:
+
+- Criar documentação do arquivo project-config.yaml.
+- O update só atualia os arquivos do gradle, não remove nem adiciona novos modulos declarados no project-config.yaml, talvez vale fazer isso já tbm (adicionar).
+- Tirar a necessidade de tr -d '\r' no completion.
+- Usar uma imagem menor (eu mudei para ubuntu pq queria rodar java, mas desisti).
+- Achar uma ferramenta para identar os arquivos gerados.
+- Melhorar o create * (os parametros ali ficaram toscos), talvez até começar a dar uma app mais completa já pronta.
+- Permitir fazer push da imagem via comando automaticamente
+- Permitir rodar gradifyctl apontando para imagem local sem alterar o script
