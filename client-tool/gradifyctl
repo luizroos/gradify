@@ -1,20 +1,19 @@
 #!/bin/bash
-DOCKER_IMAGE_NAME=gradify
-DOCKER_IMAGE_VERSION=0.1
-DOCKER_IMAGE="$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION"
+DOCKER_IMAGE=gradify
+#DOCKER_IMAGE=luizroos/gradify:0.1
 USER_UID=$(id -u)
 USER_GID=$(id -g)
 
 # O primeiro argumento passado para o script será encaminhado para o Docker run
 COMMAND="$1"
-shift  # Remove o primeiro argumento (comando) para que os outros possam ser passados para o contêiner
+
+# Remove o primeiro argumento (comando) para que os outros possam ser passados para o contêiner
+shift
 
 docker run -it --rm \
-  --name $DOCKER_IMAGE_NAME \
+  --name gradify \
   -v "$(pwd):/project" \
   -e "HOST_USER_UID=$USER_UID" \
   -e "HOST_USER_GID=$USER_GID" \
   "$DOCKER_IMAGE" \
   $COMMAND "$@"
-
-#  -v "$HOME/.gradle":/root/.gradle \

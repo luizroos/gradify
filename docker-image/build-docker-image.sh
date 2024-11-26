@@ -2,10 +2,11 @@
 
 echo "Gerando imagem docker"
 
-DOCKER_IMAGE_NAME=gradify
-DOCKER_IMAGE_VERSION=0.1
-DOCKER_IMAGE="$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION"
-
+DOCKER_IMAGE=gradify
 docker build -t $DOCKER_IMAGE .
 
 echo "Imagem $DOCKER_IMAGE criada!"
+
+# TODO deixar uma forma de fazer build ou push, de acordo com parametro
+#docker tag gradify luizroos/gradify:0.1
+#docker push luizroos/gradify:0.1
