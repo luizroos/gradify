@@ -12,6 +12,17 @@ to_camel_case() {
   echo "$input" | sed -e 's/[^a-zA-Z0-9]/ /g' -e 's/\b\(.\)/\U\1/g' | tr -d ' ' | sed 's/\b\(.\)/\U\1/'
 }
 
+# Monitora um arquivo e executa um script toda vez que o arquivo alterar
+register_file_change_listener() {
+  local file=$1
+  local execScript=$2
+
+  echo "Monitoring changes on $file..."
+  while inotifywait -e modify "$file"; do
+    bash $execScript
+  done
+}
+
 # gera o arquivo build.gradle do sistema
 gen_file_from_template() {
   local templateFile="$1"

@@ -1,0 +1,23 @@
+{% set versionCatalogs = project.versionCatalogs | default({}) %}
+
+[versions]
+{% for version in versionCatalogs.versions | default([]) %}
+  {{ version }}
+{% endfor %}
+
+[plugins]
+{% for plugin in versionCatalogs.plugins | default([]) %}
+  {{ plugin }}
+{% endfor %}
+
+[bundles]
+{% for bundle in versionCatalogs.bundles | default([]) %}
+  {{ bundle }}
+{% endfor %}
+
+[libraries]
+{% for library in versionCatalogs.libraries | default([]) %}
+  {{ library }}
+{% endfor %}
+
+

@@ -1,0 +1,50 @@
+configVersion: 'v1'
+project:
+  name: 'spring-app'
+  group: 'example'
+  version: '0.0.1-SNAPSHOT'
+  language:
+    type: 'java'
+    version: '21'
+  # https://docs.gradle.org/current/userguide/version_catalogs.html
+  versionCatalogs:
+    versions:
+      - spring-boot = "3.4.0"
+    plugins:
+      - spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+      - java = { id = "java" }
+    libraries:
+      - spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
+      - spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+      - spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+  # https://docs.gradle.org/current/userguide/declaring_repositories.html
+  repositories:
+    - maven { url 'https://repo.spring.io/milestone' }
+  plugins:
+    - alias(libs.plugins.java)
+    - alias(libs.plugins.spring.boot) apply false
+  subprojects:
+    plugins:
+      - libs.plugins.java.get().pluginId
+    dependencies:
+      - implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+      - testImplementation libs.spring.boot.starter.test
+  modules:
+    - name: app-one
+      type: app
+      plugins:
+        - libs.plugins.spring.boot.get().pluginId
+      dependencies:
+        - implementation project(':common')
+        - implementation libs.spring.boot.starter.web
+    - name: app-two
+      type: app
+      plugins:
+        - libs.plugins.spring.boot.get().pluginId
+      dependencies:
+        - implementation project(':common')
+        - implementation libs.spring.boot.starter.web
+    - name: common
+      type: lib
+      dependencies:
+        - implementation libs.spring.boot.starter

@@ -1,8 +1,4 @@
-{% if configVersion is not defined or configVersion != 'v1' %}
-    {{- raise("Erro: 'configVersion' deve ser 'v1'.") -}}
-{% endif %}
-
-/** ARQUIVO GERADO AUTOMATICAMENTE, NAO MODIFIQUE ({{ configVersion }} )*/
+/** ARQUIVO GERADO AUTOMATICAMENTE */
 
 {% if project.plugins is defined %}
 plugins {
@@ -29,10 +25,11 @@ allprojects {
         {% endfor %}
         mavenCentral()
     }
+
     {% if project.allprojects is defined %}
         {% if project.allprojects.plugins is defined %}
             {% for plugin in project.allprojects.plugins %}
-                apply plugin: '{{ plugin }}'
+                apply plugin: {{ plugin }}
             {% endfor %}
         {% endif %}
 
@@ -51,7 +48,7 @@ subprojects {
     {% if project.subprojects is defined %}
         {% if project.subprojects.plugins is defined %}
             {% for plugin in project.subprojects.plugins %}
-                apply plugin: '{{ plugin }}'
+                apply plugin: {{ plugin }}
             {% endfor %}
         {% endif %}
 
@@ -71,7 +68,7 @@ subprojects {
     project(':{{ module.name }}') {
         {% if module.plugins is defined %}
             {% for plugin in module.plugins %}
-                apply plugin: '{{ plugin }}'
+                apply plugin: {{ plugin }}
             {% endfor %}
         {% endif %}
 
@@ -84,7 +81,6 @@ subprojects {
         {% endif %}
     }
 {% endfor %}
-
 
 tasks.named('test') {
 	useJUnitPlatform()
