@@ -3,13 +3,12 @@ source $GRADIFY_DIR/scripts/functions.sh
 
 # valida que as variaveis foram preenchidas
 if [[ -z "$HOST_USER_UID" || -z "$HOST_USER_GID" ]]; then
-  echo "Error: required env vars."
+  log_error "missing required env vars."
   exit 1
 fi
 
 # garante que todos arquivos estejam setados com owner do host
 set_host_owner "$GRADIFY_DIR"
-
 
 # gradifyctl bash
 if [[ "$1" == "bash" ]]; then  
@@ -30,15 +29,15 @@ TOOL_COMMAND=$2
 COMMAND_PARAM1=$3
 
 if [ ! -d "$GRADIFY_DIR/$TOOL_TYPE" ]; then
-  echo "Error: the $TOOL_TYPE is not supported."
+  log_error "the $TOOL_TYPE is not supported."
   exit 1  
 fi
 
 
-# gradifyctl {tool*} demo-project *
-if [[ "$TOOL_COMMAND" == "demo-project" ]]; then  
+# gradifyctl {tool*} project-config *
+if [[ "$TOOL_COMMAND" == "project-config" ]]; then  
   if [ -z "$COMMAND_PARAM1" ] || [ ! -d "$GRADIFY_DIR/$TOOL_TYPE/$COMMAND_PARAM1" ]; then
-    echo "Error: invalid $COMMAND_PARAM1 option."
+    log_error "invalid $COMMAND_PARAM1 option."
     exit 1  
   fi
   cat $GRADIFY_DIR/$TOOL_TYPE/$COMMAND_PARAM1/demo-project-config.yaml
@@ -47,7 +46,7 @@ fi
 
 # checa se o arquivo de configuracao do projeto existe
 if [ ! -f $PRJ_CONFIG_FILENAME ]; then
-    echo "Error: missing project config file."
+    log_error "missing project config file."
     exit 1
 fi
 
@@ -56,7 +55,7 @@ UPDATE_SCRIPT=$GRADIFY_DIR/$TOOL_TYPE/$VERSION/scripts/update-cmd.sh
 CREATE_SCRIPT=$GRADIFY_DIR/$TOOL_TYPE/$VERSION/scripts/create-cmd.sh
 
 if [ ! -d "$GRADIFY_DIR/$TOOL_TYPE/$VERSION" ]; then
-  echo "Error: The $TOOL_TYPE tool does not support version $VERSION."
+  log_error "the $TOOL_TYPE tool does not support version $VERSION."
   exit 1  
 fi
 
@@ -69,14 +68,7 @@ if [[ "$TOOL_COMMAND" == "update" ]]; then
   exit 0
 fi
 
-# gradifyctl {tool*} create *
-if [[ "$TOOL_COMMAND" == "create" ]]; then
-  bash $CREATE_SCRIPT "${@:3}" && $UPDATE_SCRIPT
-  exit 0
-fi
-
-
-echo "Invalid tool command: $TOOL_COMMAND"
+log_error "invalid tool command: $TOOL_COMMAND"
 exit 1
 
 

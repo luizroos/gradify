@@ -1,0 +1,14 @@
+questions: 
+  - question: Qual o package da aplicação?
+    defaultValue: br.com.app
+    varName: packageName
+  - question: Qual o nome da classe Main? (ex RestAPI, EventConsumer)
+    defaultValue: SpringBootApp
+    varName: mainClassName
+  - question: Em qual porta a aplicação vai executar?
+    defaultValue: 8080
+    varName: serverPort
+preTemplateScript:
+  | 
+  mkdir -p src/main/java/$(echo "$packageName" | tr '.' '/') &&
+  mv src/main/java/SpringBootApp.java.j2 src/main/java/$(echo "$packageName" | tr '.' '/')/$mainClassName.java.j2

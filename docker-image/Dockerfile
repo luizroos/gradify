@@ -1,22 +1,28 @@
 # Use a imagem base Ubuntu
 FROM ubuntu:22.04
 
-# Instalar dependências necessárias (curl, jq, bash, yq)
-RUN apt-get update && apt-get install -y \
-    curl \
-    jq \
-    bash \
-    vim \
-    inotify-tools \
-    python3 \
-    python3-pip \
-    && curl -L https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_amd64 -o /usr/bin/yq \
-    && chmod +x /usr/bin/yq \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
 
-# jinja2 serve para parsear templates, usamos ele para substituir variáveis nos arquivos
-#RUN pip install jinja-cli
+RUN apt-get install -y \
+    bash \
+    curl \
+    vim \
+    jq \
+    fzf \ 
+    && curl -L https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_amd64 -o /usr/bin/yq \
+    && chmod +x /usr/bin/yq
+
+# Ferramenta para monitorar mudanças em arquivos
+RUN apt-get install -y \
+    inotify-tools
+
+# Python e jinja2
+RUN apt-get install -y \
+    python3 \
+    python3-pip
 RUN pip install jinja2-cli pyyaml
+
+RUN rm -rf /var/lib/apt/lists/*
 
 # diretorio para onde copiamos nossas coisas
 ENV GRADIFY_DIR="/gradify"

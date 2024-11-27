@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# funcoes de log
+log_debug() {
+    log "DEBUG" "$1"
+}
+
+log_info() {
+    log "INFO" "$1"
+}
+
+log_warn() {
+    log "WARN" "$1"
+}
+
+log_error() {
+    log "ERROR" "$1"
+}
+
+log() {
+    local level="$1"
+    local message="$2"
+    echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") [$level] $message"
+}
+
 # Função para converter a string para lowercase
 sanitize_and_lowercase() {
   local input=$1
@@ -7,7 +30,7 @@ sanitize_and_lowercase() {
 }
 
 # Função para converter a string para CamelCase
-to_camel_case() {
+depre_to_camel_case() {
   local input=$1
   echo "$input" | sed -e 's/[^a-zA-Z0-9]/ /g' -e 's/\b\(.\)/\U\1/g' | tr -d ' ' | sed 's/\b\(.\)/\U\1/'
 }
@@ -17,7 +40,7 @@ register_file_change_listener() {
   local file=$1
   local execScript=$2
 
-  echo "Monitoring changes on $file..."
+  log_debug "Monitoring changes on $file..."
   while inotifywait -e modify "$file"; do
     bash $execScript
   done
@@ -57,7 +80,7 @@ copy_dir_content() {
   local dest="$2"
 
   if [ ! -d "$src" ]; then
-    echo "Erro: Diretório de origem '$src' não existe!"
+    log_error "Diretório de origem '$src' não existe!"
     return 1
   fi
 

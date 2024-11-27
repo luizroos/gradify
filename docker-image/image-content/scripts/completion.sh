@@ -5,15 +5,6 @@ _gradifyctl_completions() {
   # Primeiro nível de comandos principais
   local main_commands="gradle completion bash"
 
-  # Subcomandos para 'gradle'
-  local gradle_subcommands="create update demo-project"
-
-  # Subcomandos para 'gradle update'
-  local gradle_update_subcommands="keep-alive"
-
-  # Subcomandos para 'gradle demo-project'
-  local gradle_demo_project_subcommands="v1"
-
   # Primeira palavra após 'gradifyctl'
   if [[ ${COMP_CWORD} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "$main_commands" -- $cur) )
@@ -21,20 +12,23 @@ _gradifyctl_completions() {
   fi
 
   # Subcomandos para 'gradle'
+  local gradle_subcommands="update project-config"
   if [[ ${COMP_WORDS[1]} == "gradle" && ${COMP_CWORD} -eq 2 ]]; then
     COMPREPLY=( $(compgen -W "$gradle_subcommands" -- $cur) )
     return 0
   fi
 
   # Subcomandos para 'gradle update'
+  local gradle_update_subcommands="keep-alive"
   if [[ ${COMP_WORDS[1]} == "gradle" && ${COMP_WORDS[2]} == "update" && ${COMP_CWORD} -eq 3 ]]; then
     COMPREPLY=( $(compgen -W "$gradle_update_subcommands" -- $cur) )
     return 0
   fi
 
-  # Subcomandos para 'gradle demo-project'
-  if [[ ${COMP_WORDS[1]} == "gradle" && ${COMP_WORDS[2]} == "demo-project" && ${COMP_CWORD} -eq 3 ]]; then
-    COMPREPLY=( $(compgen -W "$gradle_demo_project_subcommands" -- $cur) )
+  # Subcomandos para 'gradle project-config'
+  local gradle_project_config_subcommands="v1"
+  if [[ ${COMP_WORDS[1]} == "gradle" && ${COMP_WORDS[2]} == "project-config" && ${COMP_CWORD} -eq 3 ]]; then
+    COMPREPLY=( $(compgen -W "$gradle_project_config_subcommands" -- $cur) )
     return 0
   fi  
 }
