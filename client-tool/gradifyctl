@@ -1,6 +1,6 @@
 #!/bin/bash
-#DOCKER_IMAGE=gradify
-DOCKER_IMAGE=luizroos/gradify:0.1
+DOCKER_IMAGE=gradify
+#DOCKER_IMAGE=luizroos/gradify:0.1
 USER_UID=$(id -u)
 USER_GID=$(id -g)
 

@@ -22,6 +22,9 @@ RUN apt-get install -y \
     python3-pip
 RUN pip install jinja2-cli pyyaml
 
+RUN pip install questionary
+RUN pip install termcolor
+
 RUN rm -rf /var/lib/apt/lists/*
 
 # diretorio para onde copiamos nossas coisas

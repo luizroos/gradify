@@ -1,0 +1,25 @@
+questions:
+  - question: Qual o package da aplicação?
+    defaultValue: br.com.app
+    varName: packageName
+    type: string
+  - question: Qual o nome da classe Main? (ex RestAPIApp, EventConsumerApp)
+    defaultValue: RestAPIApp
+    varName: mainClassName
+    type: string_alphanumeric
+  - question: Em qual porta a aplicação vai executar?
+    defaultValue: 8080
+    varName: serverPort
+    type: positive_integer
+  - question: A aplicação conecta em um banco relacional? Usa JPA?
+    defaultValue: true
+    varName: useJpa
+    type: boolean
+preTemplateScript:
+  - nor_package_name=$(echo "$packageName" | tr '.' '/')
+  - temp_dir=$(mktemp -d)
+  - mv src/main/java/* "$temp_dir"/
+  - mkdir -p src/main/java/$nor_package_name
+  - mv "$temp_dir"/* src/main/java/$nor_package_name/
+  - mv src/main/java/$nor_package_name/_SpringBootApp.java.j2 src/main/java/$nor_package_name/$mainClassName.java.j2
+  - rm -rf "$temp_dir"

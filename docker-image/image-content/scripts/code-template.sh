@@ -4,6 +4,7 @@
 #No momento do update, sera feito essas perguntas para o usuario e repassado as variaveis para o parser do template
 
 source $GRADIFY_DIR/scripts/functions.sh
+source $GRADIFY_DIR/scripts/ui.sh
 
 # pergunta e aplica um template ao módulo
 apply_code_template() {
@@ -17,11 +18,22 @@ apply_code_template() {
   local tool_code_template_base_dir="$GRADIFY_DIR/$tool/code-templates"
 
   # pergunta se quer aplicar algum template, basicamente listando os templates que existem
-  local selected_template=$((
-    echo $no_opt_label
-    find $tool_code_template_base_dir/* -maxdepth 0 -type d -printf "%f\n"
-  ) | fzf --header="Selecione entre as opções" --prompt="Deseja aplicar algum template para $module_path? ")
-  
+  options=$(
+    {
+      echo "$no_opt_label"
+      find "$tool_code_template_base_dir"/* -maxdepth 0 -type d -printf "%f\n"
+    } | paste -sd ',' -
+  )
+  temp_file=$(mktemp)
+  python3 $GRADIFY_DIR/python/ui.py "ui_options" "$temp_file" "Deseja aplicar algum template para $module_path?" "$options"
+  selected_template=$(cat "$temp_file")
+  rm "$temp_file"  
+  #local options=$({
+  #  echo "$no_opt_label"
+  #  find "$tool_code_template_base_dir"/* -maxdepth 0 -type d -printf "%f\n"
+  #}) 
+  #local selected_template=$(ui_options "Deseja aplicar algum template para $module_path?" "$options")   
+
   # por convencao, os code templates devem ter um diretorio "data" dentro deles
   local code_template_dir="$tool_code_template_base_dir/$selected_template"
   local code_template_data_dir="$code_template_dir/data"
@@ -75,11 +87,15 @@ parse_code_template_vars() {
     mapfile -t var_names_arr <<< "$var_names"
     for var_name in "${var_names_arr[@]}"; do
         local question=$(yq eval ".questions[] | select(.varName == \"$var_name\") | .question" "$var_questions_file")
+        local type=$(yq eval ".questions[] | select(.varName == \"$var_name\") | .type" "$var_questions_file")
         local default_value=$(yq eval ".questions[] | select(.varName == \"$var_name\") | .defaultValue" "$var_questions_file")
 
-        local response=$((
-            echo $default_value
-        ) | fzf --header="$question" --prompt="Resposta: " --print-query | awk '{printf "%s", $0}') 
+        ######
+        temp_file=$(mktemp)
+        python3 $GRADIFY_DIR/python/ui.py "ui_question" "$temp_file" "$question" "$type" "$default_value" 
+        response=$(cat "$temp_file")
+        rm "$temp_file"
+        ##### local response=$(ui_question "$question" "$type" "$default_value")
 
         # grava a variavel no arquivo de parametro
         echo "$var_name: $response" >> "$output_vars_file"
@@ -88,12 +104,13 @@ parse_code_template_vars() {
         eval "$var_name=\"$response\""
     done
 
-    local preTemplateScript=$(yq '.preTemplateScript' "$var_questions_file")
-    if [[ -n "$preTemplateScript" && "$preTemplateScript" != "null" ]]; then
-        # TODO ver se nao tem risco aqui, usuario digitar alguma coisa por ex de risco
+    
+    # executa os comandos do var questions
+    readarray -t preTemplateScript < <(yq '.preTemplateScript[]' "$var_questions_file")
+    for script in "${preTemplateScript[@]}"; do
         cd $base_dir
-        log_debug "applying pre template script: $preTemplateScript..."
-        eval $preTemplateScript
+        log_debug "applying pre template script: $script"
+        eval "$script" || { log_error "Error applying: $script"; exit 1; }
         cd -
-    fi
+    done
 }

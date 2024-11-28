@@ -1,0 +1,5 @@
+server.port=${PORT:{{ serverPort }}}
+
+{% if useJpa is defined and useJpa == true %}
+spring.jpa.open-in-view=false
+{% endif %}

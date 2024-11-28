@@ -1,0 +1,20 @@
+package {{ packageName }}.resources.user;
+
+/** Response para o controller de exemplo apenas */
+public class GetUserResponse {
+
+    private final UserEntity user;
+
+    public GetUserResponse(UserEntity user) {
+        this.user = user;
+    }
+
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    public String getName() {
+        return user.getName();
+    }
+
+}
