@@ -10,6 +10,9 @@ COMMAND="$1"
 # Remove o primeiro argumento (comando) para que os outros possam ser passados para o contêiner
 shift
 
+ #--userns=host \
+ # -u $(id -u):$(id -g) \
+ 
 docker run -it --rm \
   -v "$(pwd):/project" \
   -e "HOST_USER_UID=$USER_UID" \

@@ -7,35 +7,34 @@ from logger_config import setup_logger
 from functools import partial
 
 logger = setup_logger()
+print_prefix = colored("Gradify", "light_blue")
 
-def printInfo(message):
-    formatted_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
-    print(f"{formatted_now} - {message}")
+def print_info(message: str):
+    #formatted_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
+    print(f"{print_prefix} {message}")
 
-def printWarn(message):
-    printInfo(colored(message, "yellow"))
+def print_warn(message: str):
+    print_info(colored(message, "yellow"))
 
-def printError(message):
-    printInfo(colored(message, "red"))
+def print_error(message: str):
+    print_info(colored(message, "red"))
 
-def ui_options(question, options):
-    options_list = options.split(",")
+def ui_options(question: str, options: any):
     option = questionary.select(
         message=question,
         qmark="Gradify",
-        choices=options_list
+        choices=options
     ).ask()
-
     return option
 
-def ui_question(question, q_type, default_value):
+def ui_question(question: str, q_type: str, default_value: str):
     if q_type == "boolean":
-        response = ui_options(question, "true,false")
+        response = ui_options(question, ["true", "false"])
     else:
         response = questionary.text(
             message=question,
             qmark="Gradify",
-            instruction=q_type,
+            instruction=q_type, # acho que isso pode tirar depois
             default=default_value,
             validate=partial(validate_type, expected_type=q_type)
         ).ask()
@@ -71,6 +70,7 @@ def validate_type(value, expected_type):
     else:
         return False
 
+
 if __name__ == "__main__":
     method = sys.argv[1]
     out_file_resp = sys.argv[2]
@@ -84,7 +84,8 @@ if __name__ == "__main__":
     elif method == 'ui_options':
         question = sys.argv[3]
         options = sys.argv[4]        
-        response = ui_options(question, options)
+        options_list = options.split(",")
+        response = ui_options(question, options_list)
     else: 
         raise ValueError("Invalid Method!")
     

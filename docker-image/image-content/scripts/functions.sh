@@ -41,8 +41,8 @@ register_file_change_listener() {
   local execScript=$2
 
   log_debug "Monitoring changes on $file..."
-  while inotifywait -e modify "$file"; do
-    bash $execScript
+  while inotifywait -e modify,move_self "$file"; do
+    bash -c $execScript
   done
 }
 
@@ -57,39 +57,10 @@ gen_file_from_template() {
 
   # remove linhas em branco
   strip_empty_lines $destFile
-
-  # garante que o owner do arquivo é o usuário do host
-  set_host_owner $destFile
 }
 
 # Elimina as linhas em branco do arquivo
 strip_empty_lines() {
   local file="$1"
   sed -i '/^\s*$/d' $file
-}
-
-# Função para definir o dono do arquivo como o usuário do host
-set_host_owner() {
-  local fileOrDir="$1"
-  chown -R $HOST_USER_UID:$HOST_USER_GID "$fileOrDir"
-}
-
-# Função para copiar um diretório
-copy_dir_content() {
-  local src="$1"
-  local dest="$2"
-
-  if [ ! -d "$src" ]; then
-    log_error "Diretório de origem '$src' não existe!"
-    return 1
-  fi
-
-  if [ ! -d "$dest" ]; then
-    mkdir -p "$dest"
-  fi
-
-  # -a preseva permissões
-  cp -ra "$src"/* "$dest"
-
-  return 0
 }

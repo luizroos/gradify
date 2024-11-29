@@ -11,11 +11,12 @@ apply_code_template() {
   # nome do "modulo", o que pode ser qualquer diretorio especifico
   local module_path="$1"
   # ferramenta que esta sendo usada
-  local tool=$2
+  local tool_name=$2
+
   # valor padrao para não querer nenhum template
   local no_opt_label="Nenhum"
   # diretorio base dos code templates da tool
-  local tool_code_template_base_dir="$GRADIFY_DIR/$tool/code-templates"
+  local tool_code_template_base_dir="$GRADIFY_DIR/$tool_name/code-templates"
 
   # pergunta se quer aplicar algum template, basicamente listando os templates que existem
   options=$(
@@ -41,6 +42,8 @@ apply_code_template() {
       return;
   fi
 
+
+
   # gera um arquivo temporario para guardar o yaml das variaveis do template
   local temp_yaml_template_file="$(mktemp).yaml"
   if [ -f "$code_template_dir/var-questions.yaml" ]; then 
@@ -49,10 +52,12 @@ apply_code_template() {
   else
     touch $temp_yaml_template_file
   fi
-  
+
+  ## PAREI AQUI  --- code_template.py
+    
   # copia os arquivos do template
   log_info "applying code template $selected_template to $module_path..."
-  copy_dir_content "$code_template_data_dir" "$module_path/"
+  python3 $GRADIFY_DIR/python/file_system.py copy_dir_content "$code_template_data_dir" "$module_path/"
 
   # para cada arquivo, aplica o template
   for template_file in $(find "$module_path/" -type f -name "*.j2"); do
