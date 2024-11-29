@@ -7,8 +7,6 @@ if [[ -z "$HOST_USER_UID" || -z "$HOST_USER_GID" ]]; then
   exit 1
 fi
 
-log_info "Configurando usuário com UID=$HOST_USER_UID e GID=$HOST_USER_GID"
-
 echo "UID_MIN 1000" > /etc/login.defs
 echo "UID_MAX 268511072" >> /etc/login.defs
 
