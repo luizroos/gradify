@@ -43,7 +43,9 @@ RUN apk add --no-cache \
 
 # priorizar a instalacao via apk, deixar para instalar assim só o que não der para ser via apk
 RUN pip3 install --break-system-packages \
-    questionary 
+    questionary \
+    cerberus
+
 
 # Diretorio para onde copiamos nossas coisas
 ENV GRADIFY_DIR="/gradify"

@@ -22,7 +22,7 @@ class ProjectModule:
     # cria a estrutura do módulo dentro de um diretório base
     def create_module_directories(self, base_dir: str, relative_dirs: List[str]):
         for relative_dir in relative_dirs:
-            full_path = os.path.join(base_dir, relative_dir)
+            full_path = os.path.join(self.module_path(base_dir), relative_dir)
             os.makedirs(full_path, exist_ok=True)
 
 # Representa a lista de modulos do projeto

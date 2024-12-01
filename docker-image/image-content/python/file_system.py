@@ -32,26 +32,15 @@ def get_sub_directories(base_dir: str):
 def is_directory_exists(path: str):
     return os.path.isdir(path)
 
-# verifica se um arquivo existe
-def is_file_exists(path: str):
-    return os.path.isfile(path)
-
-# cria diretorios
-@deprecated
-def create_directories(directories):
-  for dir_path in directories:
-    if not is_directory_exists(dir_path):
-      os.makedirs(dir_path, exist_ok=True)
-
 # copia o conteudo de um diretio para outro
 def copy_dir_content(src, dest):
     # Verifica se o diretório de origem existe
-    if not is_directory_exists(src):
+    if not os.path.isdir(src):
         logger.error(f"Diretório de origem '{src}' não existe!")
         return False
     
     # Verifica se o diretório de destino existe, cria se não existir
-    if not is_directory_exists(dest):
+    if not os.path.isdir(dest):
         os.makedirs(dest)
     
     # Copia o conteúdo do diretório de origem para o diretório de destino
@@ -62,7 +51,7 @@ def copy_dir_content(src, dest):
         for item in os.listdir(src):
             src_item = os.path.join(src, item)
             dest_item = os.path.join(dest, item)
-            if is_directory_exists(src_item):
+            if os.path.isdir(src_item):
                 shutil.copytree(src_item, dest_item, dirs_exist_ok=True)  # Copia subdiretórios recursivamente
             else:
                 shutil.copy2(src_item, dest_item)  # Copia arquivos com metadados (permissões)

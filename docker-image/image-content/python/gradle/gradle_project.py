@@ -6,7 +6,7 @@ from ui import print_info, print_error
 from logger_config import setup_logger
 from system import get_gradify_base_dir
 from template_render import gen_file_from_loaded_template
-from project.project_module import ProjectModules, ProjectModule
+from project.project_module import ProjectModules
 from project.project_directory import ProjectDirectory, ProjectDirSyncAction, SyncAction
 
 logger = setup_logger()
@@ -79,6 +79,7 @@ class GradleProject:
         
         module = sync_action.linked_module       
         
+        # TODO isso tudo aqui poderia ser feito um dia reusando a estrutura de code template
         gradle_src_dirs = [
             "src",
             "src/main",
@@ -87,6 +88,7 @@ class GradleProject:
             "src/test",
             "src/test/java",
         ]        
+        # TODO ta criando errado
         module.create_module_directories(self.project_dir, gradle_src_dirs)
 
         # aplica um code template (TODO revisar daqui em diante)

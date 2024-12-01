@@ -1,8 +1,9 @@
 import os
 import yaml
+from typing import Union
 from jinja2 import Environment, FileSystemLoader
 
-# melhorar isso, tem que entender os tipos e acertar
+# TODO melhorar isso, tem que entender os tipos e acertar
 def gen_file_from_template2(template_path, params, output_path: str):
     env = Environment(loader=FileSystemLoader(template_path.parent))
     template = env.get_template(template_path.name)
@@ -10,7 +11,8 @@ def gen_file_from_template2(template_path, params, output_path: str):
         f.write(template.render(params))
     strip_empty_lines(output_path)
 
-def gen_file_from_loaded_template(template_path: str, output_path: str, yaml_param_file: any):
+# gera template com base num arquivo yaml ja carregado
+def gen_file_from_loaded_template(template_path: str, output_path: str, yaml_param_file: Union[dict, list]):
     # Carregar o ambiente Jinja2 e o template
     env = Environment(loader=FileSystemLoader(os.path.dirname(template_path)))
     template = env.get_template(os.path.basename(template_path))
@@ -22,11 +24,13 @@ def gen_file_from_loaded_template(template_path: str, output_path: str, yaml_par
     # Remove linhas em branco no arquivo de destino
     strip_empty_lines(output_path)
 
+# gera template com base num arquivo yaml 
 def gen_file_from_template(template_path: str, output_path: str, yaml_param_file: str):
     with open(yaml_param_file, 'r') as f:
         params = yaml.safe_load(f)
     gen_file_from_loaded_template(template_path, output_path, params)
 
+# apaga as linhas em branco do arquivo
 def strip_empty_lines(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()

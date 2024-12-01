@@ -1,6 +1,6 @@
-import yaml
+import os
 from pathlib import Path
-from file_system import get_sub_directories, is_directory_exists, copy_dir_content, load_yaml
+from file_system import get_sub_directories, copy_dir_content, load_yaml
 from system import get_gradify_base_dir
 from ui import ui_options, ui_question, print_info
 from shell import execute_shell_commands
@@ -30,7 +30,7 @@ class CodeTemplate:
 
         code_template_dir = f"{tool_code_template_base_dir}/{selected_template}"
         code_template_data_dir = f"{code_template_dir}/data"
-        if not is_directory_exists(code_template_data_dir):
+        if not os.path.isdir(code_template_data_dir):
             logger.error(f"Template {selected_template} configurado errado, faltando diretório data...")
             return
         
