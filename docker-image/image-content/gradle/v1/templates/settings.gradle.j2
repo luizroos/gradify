@@ -2,6 +2,6 @@
 
 rootProject.name = '{{ project.name }}'
 
-{% for module in project.modules %}
-include '{{ module.name }}'
+{% for module in project.modules or [] %}
+  include '{{ module.name }}'
 {% endfor %}

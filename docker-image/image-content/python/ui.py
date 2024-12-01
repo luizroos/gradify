@@ -2,22 +2,24 @@ import questionary
 import re
 import sys
 from termcolor import colored
-from datetime import datetime
 from logger_config import setup_logger
 from functools import partial
 
 logger = setup_logger()
 print_prefix = colored("Gradify", "light_blue")
 
-def print_info(message: str):
-    #formatted_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
+def _print(message: str):
     print(f"{print_prefix} {message}")
 
+def print_info(message: str):
+    #formatted_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
+    _print(colored(message, "white"))
+
 def print_warn(message: str):
-    print_info(colored(message, "yellow"))
+    _print(colored(message, "yellow"))
 
 def print_error(message: str):
-    print_info(colored(message, "red"))
+    _print(colored(message, "red"))
 
 def ui_options(question: str, options: any):
     option = questionary.select(

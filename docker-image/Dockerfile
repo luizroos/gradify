@@ -1,37 +1,49 @@
 # Use a imagem base Alpine
-FROM alpine:3.18
+FROM alpine:3.20.3
+#FROM alpine:3.18
 
-# Atualizar o repositório e instalar pacotes básicos
-RUN apk update && apk add --no-cache \
+# Atualiza os pacotes do sistema
+RUN apk update 
+
+# Instalar pacotes básicos essenciais
+RUN apk add --no-cache \
+    # Bash: Shell usado para scripts e comandos interativos
     bash \
+    # Curl: http client
     curl \
+    # Vim: editor de texto util caso precisamos entrar no container
     vim \
+    # Coreutils: Conjunto de ferramentas essenciais para manipulação de arquivos e processos, como cp, ls, mv, etc.
     coreutils \
-    sudo \
-    jq \
+    # Inotify-tools: Ferramentas para monitoramento de alterações em arquivos e diretórios
     inotify-tools \
-    python3 \
-    py3-pip \
-    shadow  # Instala o pacote shadow para permitir a criação de usuário
-
-# para que o find suporte a opção printf
-RUN apk add --no-cache findutils
+    # Shadow: Ferramenta que fornece funcionalidades para manipulação de usuários e senhas no sistema, permitindo a criação de usuários não-root
+    shadow    
 
 # Baixar e instalar o gosu manualmente
 RUN curl -L https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64 -o /usr/local/bin/gosu && \
     chmod +x /usr/local/bin/gosu
 
-# Instalar pacotes Python via pip
-RUN pip3 install \
-    jinja2-cli \
-    jinja2 \
-    pyyaml \
-    questionary \
-    termcolor
+# Só se for executar via shell (já que mudou tudo para python, não precisa)
+#RUN apk add --no-cache \
+# JQ: Ferramenta para processar JSON de forma simples e poderosa (TODO ver se precisa ainda)
+#jq \
+# Findutils: Conjunto de ferramentas para pesquisa e manipulação de arquivos no sistema de arquivos, incluindo o 'find' com a opção 'printf' (TODO ver se precisa)
+#findutils \
+#RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_amd64 -o /usr/bin/yq && \
+#    chmod +x /usr/bin/yq
 
-# Baixar e configurar o yq
-RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_amd64 -o /usr/bin/yq && \
-    chmod +x /usr/bin/yq
+# Instala Python e as dependencias do python que usamos
+RUN apk add --no-cache \
+    python3 \
+    py3-pip     \
+    py3-jinja2  \
+    py3-yaml  \
+    py3-termcolor 
+
+# priorizar a instalacao via apk, deixar para instalar assim só o que não der para ser via apk
+RUN pip3 install --break-system-packages \
+    questionary 
 
 # Diretorio para onde copiamos nossas coisas
 ENV GRADIFY_DIR="/gradify"
@@ -58,6 +70,13 @@ WORKDIR $PRJ_HOST_DIR
 # Copiar o entrypoint e torná-lo executável
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# informações do build
+ARG BUILD_DATE
+ENV BUILD_DATE=${BUILD_DATE}
+
+ARG GRADIFY_VERSION=latest
+ENV GRADIFY_VERSION=$GRADIFY_VERSION
 
 # Definir o entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

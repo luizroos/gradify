@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from file_system import get_sub_directories, is_directory_exists, copy_dir_content
+from file_system import get_sub_directories, is_directory_exists, copy_dir_content, load_yaml
 from system import get_gradify_base_dir
 from ui import ui_options, ui_question, print_info
 from shell import execute_shell_commands
@@ -34,22 +34,19 @@ class CodeTemplate:
             logger.error(f"Template {selected_template} configurado errado, faltando diretório data...")
             return
         
-        var_questions_path = f"{code_template_dir}/var-questions.yaml"
-        with open(var_questions_path, 'r') as f:
-            var_questions_yaml = yaml.safe_load(f)
-
-        # faz todas as perguntas para o usuario
+        # faz todas as perguntas definidas em var-questions.yaml para o usuario
+        var_questions_yaml = load_yaml(f"{code_template_dir}/var-questions.yaml")
         env_vars = {}
-        for question_data in var_questions_yaml['questions']:
-            var_name = question_data['varName']
-            question = question_data['question']
-            var_type = question_data['type']
-            default_value = question_data.get('defaultValue', '')
-            response = ui_question(question, var_type, str(default_value))
-            env_vars[var_name] = response       
-
-        # executa os comandos antes de aplicar o template
-        execute_shell_commands(var_questions_yaml['preTemplateScript'], code_template_data_dir, env_vars)
+        if var_questions_yaml is not None:
+            for question_data in var_questions_yaml['questions']:
+                var_name = question_data['varName']
+                question = question_data['question']
+                var_type = question_data['type']
+                default_value = question_data.get('defaultValue', '')
+                response = ui_question(question, var_type, str(default_value))
+                env_vars[var_name] = response       
+            # executa os comandos antes de aplicar o template
+            execute_shell_commands(var_questions_yaml['preTemplateScript'], code_template_data_dir, env_vars)
 
         # copia todos arquivos 
         copy_dir_content(code_template_data_dir,  self.prj_module_path)

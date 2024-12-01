@@ -1,18 +1,22 @@
 #!/bin/bash
-#DOCKER_IMAGE=gradify
-DOCKER_IMAGE=luizroos/gradify:0.2
+DOCKER_IMAGE=luizroos/gradify
 USER_UID=$(id -u)
 USER_GID=$(id -g)
 
 # O primeiro argumento passado para o script será encaminhado para o Docker run
 COMMAND="$1"
 
-# Remove o primeiro argumento (comando) para que os outros possam ser passados para o contêiner
+# Remove o primeiro argumento para que os outros possam ser passados para o contêiner
 shift
 
-docker run -it --rm \
-  -v "$(pwd):/project" \
-  -e "HOST_USER_UID=$USER_UID" \
-  -e "HOST_USER_GID=$USER_GID" \
-  "$DOCKER_IMAGE" \
-  $COMMAND "$@"
+if [[ "$COMMAND" == "upgrade" ]]; then  
+  echo "Atualizando gradifyctl"
+  docker pull $DOCKER_IMAGE > /dev/null 2>&1
+else
+  docker run -it --rm \
+    -v "$(pwd):/project" \
+    -e "HOST_USER_UID=$USER_UID" \
+    -e "HOST_USER_GID=$USER_GID" \
+    "$DOCKER_IMAGE" \
+    $COMMAND "$@"
+fi

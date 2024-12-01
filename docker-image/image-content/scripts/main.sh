@@ -7,6 +7,13 @@ if [[ "$1" == "bash" ]]; then
   exit 0
 fi
 
+# gradifyctl version
+if [[ "$1" == "version" ]]; then  
+  echo "version: $GRADIFY_VERSION"
+  echo "build date: $BUILD_DATE"
+  exit 0
+fi
+
 # gradifyctl completion
 if [[ "$1" == "completion" ]]; then
   cat $GRADIFY_DIR/scripts/completion.sh
@@ -55,7 +62,7 @@ if [[ "$TOOL_COMMAND" == "update" ]]; then
   python3 -m gradle.project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME"
   if [[ "$COMMAND_PARAM1" == "keep-alive" ]]; then
     while inotifywait -e modify,move_self "$PRJ_HOST_DIR/$PRJ_CONFIG_FILENAME" 2>/dev/null; do
-      python3 -m gradle.project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME"
+      python3 -m gradle.gradle_project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME"
     done
   fi
   exit 0

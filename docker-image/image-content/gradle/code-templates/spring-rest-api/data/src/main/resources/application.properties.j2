@@ -1,4 +1,5 @@
 server.port=${PORT:{{ serverPort }}}
+server.shutdown=graceful
 
 {% if useJpa is defined and useJpa == 'true' %}
 spring.jpa.open-in-view=false

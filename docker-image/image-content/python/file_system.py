@@ -1,13 +1,22 @@
 import os
 import shutil
 import sys
-import subprocess
+import yaml
+from typing import Union
 from logger_config import setup_logger
+from utils.deprecated import deprecated
 
 logger = setup_logger()
 
+# Carrega um arquivo yaml
+def load_yaml(path: str) -> Union[dict, list]: 
+    if not os.path.isfile(path):
+        return None
+    with open(path, 'r') as file:
+        return yaml.safe_load(file)       
+
 # retorna um array com o nome dos sub diretorios de um diretorio
-def get_sub_directories(base_dir):
+def get_sub_directories(base_dir: str):
     sub_directories = []
     try:
         for entry in os.scandir(base_dir):
@@ -19,10 +28,16 @@ def get_sub_directories(base_dir):
         raise e        
 
 # verifica se um diretorio existe
-def is_directory_exists(path):
+@deprecated
+def is_directory_exists(path: str):
     return os.path.isdir(path)
 
+# verifica se um arquivo existe
+def is_file_exists(path: str):
+    return os.path.isfile(path)
+
 # cria diretorios
+@deprecated
 def create_directories(directories):
   for dir_path in directories:
     if not is_directory_exists(dir_path):
@@ -56,26 +71,6 @@ def copy_dir_content(src, dest):
     except Exception as e:
         logger.error(f"Erro ao copiar conteúdo de '{src}' para '{dest}': {e}")
         raise e
-
-# deprecated
-def shell_copy_dir_content(src, dest):
-    # Verifica se o diretório de origem existe
-    if not is_directory_exists(src):
-        logger.error(f"Diretório de origem '{src}' não existe!")
-        raise ValueError("Invalid Method!")
-    
-    # Verifica se o diretório de destino existe
-    if not is_directory_exists(dest):
-        logger.error(f"Diretório de origem '{dest}' não existe!")
-        raise ValueError("Invalid Method!")
-        #os.makedirs(dest)
-    
-    # O / . é importante para copiar o conteúdo dentro do diretório de origem.
-    # faco assim ao inves de usar shutil, pq cp -ra mantem as permissoes, para 
-    # não acabar criando alguma coisa como root
-    command = f'cp -ra {src}/. {dest}'  
-    subprocess.run(command, shell=True, check=True)
-
 
 # para ser usado por sh script
 if __name__ == "__main__":

@@ -22,14 +22,12 @@ public class UserResource {
         return ResponseEntity.status(HttpStatus.OK).body(new GetUserResponse(user));
     }
 
-    /**
-     * Método de exemplo, isso seria executado nos services
-     */
+    /** Método de exemplo, isso seria executado nos services */
     public Optional<UserEntity> findUserByID(long userId) {
         if (userId == 1) {
             UserEntity user = new UserEntity();
             user.setId(userId);
-            user.setEmail("teste@teste.com");
+            user.setEmail("joaosilva@teste.com");
             user.setName("João da Silva");
             return Optional.of(user);
         } else {

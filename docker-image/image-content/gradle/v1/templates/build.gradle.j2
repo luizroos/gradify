@@ -1,12 +1,10 @@
 /** ARQUIVO GERADO AUTOMATICAMENTE */
 
-{% if project.plugins is defined %}
 plugins {
-    {% for plugin in project.plugins %}
+    {% for plugin in project.plugins or [] %}
         {{ plugin }}
     {% endfor %}
 }
-{% endif %}
 
 group = '{{ project.group }}'
 version = '{{ project.version }}'
@@ -20,65 +18,53 @@ java {
 {# Configuracoes para todos sub projetos #}
 allprojects {
     repositories {
-        {% for repository in project.repositories %}
+        {% for repository in project.repositories or [] %}
             {{ repository }}
         {% endfor %}
         mavenCentral()
     }
 
     {% if project.allprojects is defined %}
-        {% if project.allprojects.plugins is defined %}
-            {% for plugin in project.allprojects.plugins %}
-                apply plugin: {{ plugin }}
-            {% endfor %}
-        {% endif %}
+        {% for plugin in project.allprojects.plugins or [] %}
+            apply plugin: {{ plugin }}
+        {% endfor %}
 
-        {% if project.allprojects.dependencies is defined %}
         dependencies {
-            {% for dependency in project.allprojects.dependencies %}
+            {% for dependency in project.allprojects.dependencies or [] %}
                 {{ dependency }}
             {% endfor %}
         }
-        {% endif %}
     {% endif %}
 }
 
 {# Configuracoes para todos sub projetos #}
 subprojects {
     {% if project.subprojects is defined %}
-        {% if project.subprojects.plugins is defined %}
-            {% for plugin in project.subprojects.plugins %}
-                apply plugin: {{ plugin }}
-            {% endfor %}
-        {% endif %}
+        {% for plugin in project.subprojects.plugins or [] %}
+            apply plugin: {{ plugin }}
+        {% endfor %}
 
-        {% if project.subprojects.dependencies is defined %}
         dependencies {
-            {% for dependency in project.subprojects.dependencies %}
+            {% for dependency in project.subprojects.dependencies or [] %}
                 {{ dependency }}
             {% endfor %}
         }
-        {% endif %}
     {% endif %}
 }
 
 
 {# Configuracoes os modulos #}
-{% for module in project.modules %}
+{% for module in project.modules or [] %}
     project(':{{ module.name }}') {
-        {% if module.plugins is defined %}
-            {% for plugin in module.plugins %}
-                apply plugin: {{ plugin }}
-            {% endfor %}
-        {% endif %}
+        {% for plugin in module.plugins or [] %}
+            apply plugin: {{ plugin }}
+        {% endfor %}
 
-        {% if module.dependencies is defined %}
         dependencies {
-            {% for dependency in module.dependencies %}
+            {% for dependency in module.dependencies or [] %}
                 {{ dependency }}
             {% endfor %}
         }
-        {% endif %}
     }
 {% endfor %}
 

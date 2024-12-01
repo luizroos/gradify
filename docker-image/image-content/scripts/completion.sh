@@ -3,7 +3,7 @@ _gradifyctl_completions() {
   local prev=${COMP_WORDS[COMP_CWORD-1]}
 
   # Primeiro nível de comandos principais
-  local main_commands="gradle completion bash"
+  local main_commands="version upgrade completion bash gradle"
 
   # Primeira palavra após 'gradifyctl'
   if [[ ${COMP_CWORD} -eq 1 ]]; then
