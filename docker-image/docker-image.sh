@@ -3,7 +3,7 @@
 COMMAND=$1
 IMAGE_NAME=gradify
 TAG_NAME=luizroos/gradify
-VERSION=0.2
+VERSION=0.3.0
 
 if [[ "$COMMAND" == "clean-local" ]]; then  
   # Filtra as imagens 'gradify' e as remove
