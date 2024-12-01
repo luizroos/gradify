@@ -1,11 +1,11 @@
-configVersion: 'v1'
+configVersion: "v1"
 project:
-  name: 'spring-app'
-  group: 'example'
-  version: '0.0.1-SNAPSHOT'
+  name: "spring-app"
+  group: "example"
+  version: "0.0.1-SNAPSHOT"
   language:
-    type: 'java'
-    version: '21'
+    type: "java"
+    version: "21"
   # https://docs.gradle.org/current/userguide/version_catalogs.html
   versionCatalogs:
     versions:
@@ -31,17 +31,20 @@ project:
       - testImplementation libs.spring.boot.starter.test
   modules:
     - name: app-one
+      id: absfrw
       plugins:
         - libs.plugins.spring.boot.get().pluginId
       dependencies:
         - implementation project(':common')
         - implementation libs.spring.boot.starter.web
     - name: app-two
+      id: uyeywj
       plugins:
         - libs.plugins.spring.boot.get().pluginId
       dependencies:
         - implementation project(':common')
         - implementation libs.spring.boot.starter.web
     - name: common
+      id: iwieuq
       dependencies:
         - implementation libs.spring.boot.starter
