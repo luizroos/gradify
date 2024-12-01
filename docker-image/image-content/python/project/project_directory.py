@@ -69,8 +69,7 @@ class ProjectDirectory:
     ) -> bool:
 
         # verifica a consistência dos dados de módulos (como vamos criar diretórios, não pode haver módulos repetidos)
-        if not prj_modules.has_unique_modules:
-            print_error("Existe módulos com ids ou nomes repetidos...")
+        if not prj_modules.has_unique_modules():
             return False
 
         mid_map: Dict[str, ProjectDirSyncAction] = {}
@@ -149,18 +148,17 @@ class ProjectDirectory:
                 prj_dir.keep_current_name()
 
         # executa as ações para sincronizar os diretorios
-        self.execute_project_dir_sync_actions(
+        return self.execute_project_dir_sync_actions(
             directories=directories,
             action_callback=action_callback
         )
-        return True
 
     # executa as acoes definidas para os diretorios
     def execute_project_dir_sync_actions(
             self, 
             directories: List[ProjectDirSyncAction], 
             action_callback: Callable[[ProjectDirSyncAction], None] = None
-    ):
+    ) -> bool:
         for prj_dir in directories:
             if not prj_dir.action:
                 continue
@@ -187,12 +185,12 @@ class ProjectDirectory:
                     module_id=linked_module.id
                 )
 
-        if not action_callback:
-            return
-
         # faz a chamada do callback
+        if not action_callback:
+            return True
         for action in directories:
             action_callback(action)
+        return True
 
     # cria o arquivo de manifesto
     def create_manifest_file(self, relative_path: str, module_id: str):

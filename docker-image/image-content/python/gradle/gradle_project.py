@@ -1,8 +1,8 @@
 import sys
 from typing import Union
 from code_template import CodeTemplate
-from file_system import is_directory_exists, create_directories, copy_dir_content, load_yaml
-from ui import print_info, print_warn, print_error
+from file_system import copy_dir_content, load_yaml
+from ui import print_info, print_error
 from logger_config import setup_logger
 from system import get_gradify_base_dir
 from template_render import gen_file_from_loaded_template
@@ -38,13 +38,13 @@ class GradleProject:
 
     # copia/atualiza os arquivos de configuracao do gradle para dentro do projeto
     def copy_gradle_files(self):
-        print_info("Atualizando arquivos do gradle...")
         gradify_base_dir = get_gradify_base_dir()
         config_version = self.prj_config_yaml['configVersion']
         copy_dir_content(f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/gradle-8.11.1", self.project_dir)  
         self._update_gradle_file(gradify_base_dir, config_version, "build.gradle.j2", "build.gradle")
         self._update_gradle_file(gradify_base_dir, config_version, "settings.gradle.j2", "settings.gradle")
         self._update_gradle_file(gradify_base_dir, config_version, "libs.versions.toml.j2", "gradle/libs.versions.toml")
+        return True
 
     def _update_gradle_file(self, gradify_base_dir: str, config_version: str, template_file: str, dest_file: str):
         template_file_path=f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/templates/{template_file}"
@@ -52,11 +52,11 @@ class GradleProject:
         gen_file_from_loaded_template(template_file_path, dest_file_path, self.prj_config_yaml)
 
     # cria todos modulos do projeto gradle
-    def create_modules(self) -> bool:
-        if not self.project_modules.has_unique_modules:
+    def update_modules(self) -> bool:
+        if not self.project_modules.has_unique_modules():
             # TODO criar uma classe para lidar com esse arquivo e poder fazer encapsular tudo isso la, 
             # inclusive a criação do objeto project_modules
-            print_error("Arquivo de configuração inválido, possui módulos com nome ou id duplicado.")
+            print_error("Arquivo de configuração inválido, possui módulos com nomes ou ids duplicados...")
             return False
 
         # cria o objeto que que representa a diretório do projeto
@@ -66,14 +66,14 @@ class GradleProject:
         )
 
         # sincroniza os modulos do projeto com os diretorios, no callback sera notificado o que aconteceu
-        project_directory.synchronize_with_project_modules(
+        return project_directory.synchronize_with_project_modules(
             prj_modules=self.project_modules,
             action_callback=self.sync_callback
         )
         
     # callback chamado enquando ProjectDirectory ajusta os diretorios
     def sync_callback(self, sync_action: ProjectDirSyncAction):
-        print(sync_action)
+        
         if not sync_action.linked_module or sync_action.action != SyncAction.CREATE_NEW:
             return
         
@@ -106,7 +106,16 @@ if __name__ == "__main__":
         project_dir=project_dir, 
         prj_config_filename=prj_config_filename
     )
-    gradleProject.create_modules()
-    gradleProject.copy_gradle_files()
+
+    print_info("Atualizando os módulos...")
+    if not gradleProject.update_modules():
+        print_error("Não foi possível atualizar os módulos...")
+
+    print_info("Atualizando arquivos do gradle...")
+    if not gradleProject.copy_gradle_files():
+        print_error("Não foi possível atualizar os arquivos do gradle...")
+    
     print_info("Projeto atualizado...")
+
+        
 

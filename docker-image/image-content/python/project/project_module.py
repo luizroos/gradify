@@ -38,12 +38,13 @@ class ProjectModules:
             id=module_id,
             name=module_name,
         ))
-
+    
     # verficia se os ids e nomes dos módulos são unicos
-    def has_unique_modules(modules: List[ProjectModule]) -> bool:
-        ids = [module.id for module in modules]
-        names = [module.name for module in modules]
+    def has_unique_modules(self) -> bool:
+        ids = [module.id for module in self.modules]
+        names = [module.name for module in self.modules]
         if len(ids) != len(set(ids)):
             return False
         if len(names) != len(set(names)):
             return False
+        return True

@@ -13,7 +13,7 @@ def _print(message: str):
 
 def print_info(message: str):
     #formatted_now = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
-    _print(colored(message, "white"))
+    _print(message)
 
 def print_warn(message: str):
     _print(colored(message, "yellow"))
@@ -42,7 +42,7 @@ def ui_question(question: str, q_type: str, default_value: str):
         ).ask()
 
     if not response or not validate_type(response.strip(), q_type):
-        printWarn("Valor inválido! Tente novamente.")
+        print_warn("Valor inválido! Tente novamente.")
         return ui_question(question, q_type, default_value)
     
     return response.strip()
