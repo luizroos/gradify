@@ -1,13 +1,14 @@
 import sys
 from typing import Union
-from code_template import CodeTemplate
-from file_system import copy_dir_content, load_yaml
 from ui import print_info, print_error
+from file_system import copy_dir_content, load_yaml
 from logger_config import setup_logger
 from system import get_gradify_base_dir
 from template_render import gen_file_from_loaded_template
 from project.project_module import ProjectModules
 from project.project_directory import ProjectDirectory, ProjectDirSyncAction, SyncAction
+from template_dir.template_dir import TemplateDir
+from termcolor import colored
 
 logger = setup_logger()
 TOOL_NAME="gradle"
@@ -40,14 +41,18 @@ class GradleProject:
     def copy_gradle_files(self):
         gradify_base_dir = get_gradify_base_dir()
         config_version = self.prj_config_yaml['configVersion']
-        copy_dir_content(f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/gradle-8.11.1", self.project_dir)  
-        self._update_gradle_file(gradify_base_dir, config_version, "build.gradle.j2", "build.gradle")
-        self._update_gradle_file(gradify_base_dir, config_version, "settings.gradle.j2", "settings.gradle")
-        self._update_gradle_file(gradify_base_dir, config_version, "libs.versions.toml.j2", "gradle/libs.versions.toml")
+
+        # TODO fazer isso usando TemplateDir
+        project_template_path=f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/project-templates"
+
+        copy_dir_content(f"{project_template_path}/gradle-8.11.1", self.project_dir)  
+        self._update_gradle_file(project_template_path, "build.gradle.j2", "build.gradle")
+        self._update_gradle_file(project_template_path, "settings.gradle.j2", "settings.gradle")
+        self._update_gradle_file(project_template_path, "libs.versions.toml.j2", "gradle/libs.versions.toml")
         return True
 
-    def _update_gradle_file(self, gradify_base_dir: str, config_version: str, template_file: str, dest_file: str):
-        template_file_path=f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/templates/{template_file}"
+    def _update_gradle_file(self, project_template_path: str, template_file: str, dest_file: str):
+        template_file_path=f"{project_template_path}/templates/{template_file}"
         dest_file_path=f"{self.project_dir}/{dest_file}"
         gen_file_from_loaded_template(template_file_path, dest_file_path, self.prj_config_yaml)
 
@@ -92,12 +97,24 @@ class GradleProject:
         module.create_module_directories(self.project_dir, gradle_src_dirs)
 
         # aplica um code template (TODO revisar daqui em diante)
+        
+        module_templates_path = f"{get_gradify_base_dir()}/{TOOL_NAME}/module-templates"
 
-        code_template = CodeTemplate(
-            prj_module_path=module.module_path(self.project_dir), 
-            tool_name=TOOL_NAME
+        module_path=module.module_path(self.project_dir)
+        module_template_dir = TemplateDir(
+            dest_path=module_path,
+            templates_path=module_templates_path
         )
-        code_template.apply()
+        selected_template = module_template_dir.select_template()
+        if not selected_template:
+            print_info(f"Não será aplicado nenhum template para {colored(module_path, attrs=['bold'])}...")
+            return
+
+        print_info(f"Aplicando template {colored(selected_template.name, attrs=['bold'])}...")
+        if selected_template.apply():
+            print_info(f"Template aplicado com sucesso...")
+        else:
+            print_info(f"Não foi possível aplicar o template...")
 
 if __name__ == "__main__":
     project_dir = sys.argv[1]

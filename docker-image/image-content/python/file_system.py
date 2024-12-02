@@ -2,7 +2,7 @@ import os
 import shutil
 import sys
 import yaml
-from typing import Union
+from typing import Union, List
 from logger_config import setup_logger
 from utils.deprecated import deprecated
 
@@ -16,7 +16,7 @@ def load_yaml(path: str) -> Union[dict, list]:
         return yaml.safe_load(file)       
 
 # retorna um array com o nome dos sub diretorios de um diretorio
-def get_sub_directories(base_dir: str):
+def get_sub_directories(base_dir: str) -> List[str]:
     sub_directories = []
     try:
         for entry in os.scandir(base_dir):
