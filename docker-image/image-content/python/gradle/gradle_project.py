@@ -37,18 +37,33 @@ class GradleProject:
             )        
         self.project_modules = project_modules
 
+    def apply_project_template(self):
+        # TODO 1) não esta funcionando e 2) pensar o que fazer no update do dia a dia, já que teria que lembrar do template
+        config_version = self.prj_config_yaml['configVersion']
+        project_template_path=f"{get_gradify_base_dir()}/{TOOL_NAME}/{config_version}/project-templates"
+
+        project_template_dir = TemplateDir(
+            dest_path=self.project_dir,
+            templates_path=project_template_path,
+            enable_no_template=True
+        )
+
+        template = project_template_dir.select_template()
+        template.apply()
+
     # copia/atualiza os arquivos de configuracao do gradle para dentro do projeto
     def copy_gradle_files(self):
-        gradify_base_dir = get_gradify_base_dir()
-        config_version = self.prj_config_yaml['configVersion']
+        if False:
+            self.apply_project_template()
+        else:
+            config_version = self.prj_config_yaml['configVersion']
 
-        # TODO fazer isso usando TemplateDir
-        project_template_path=f"{gradify_base_dir}/{TOOL_NAME}/{config_version}/project-templates"
+            project_template_path=f"{get_gradify_base_dir()}/{TOOL_NAME}/{config_version}/project-templates_old"
 
-        copy_dir_content(f"{project_template_path}/gradle-8.11.1", self.project_dir)  
-        self._update_gradle_file(project_template_path, "build.gradle.j2", "build.gradle")
-        self._update_gradle_file(project_template_path, "settings.gradle.j2", "settings.gradle")
-        self._update_gradle_file(project_template_path, "libs.versions.toml.j2", "gradle/libs.versions.toml")
+            copy_dir_content(f"{project_template_path}/gradle-8.11.1", self.project_dir)  
+            self._update_gradle_file(project_template_path, "build.gradle.j2", "build.gradle")
+            self._update_gradle_file(project_template_path, "settings.gradle.j2", "settings.gradle")
+            self._update_gradle_file(project_template_path, "libs.versions.toml.j2", "gradle/libs.versions.toml")
         return True
 
     def _update_gradle_file(self, project_template_path: str, template_file: str, dest_file: str):

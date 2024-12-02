@@ -88,20 +88,17 @@ class TemplateDir:
             # sem template para aplicar
             return None
         
-        options: List[str]
-        
+        selected_template: str
         if self.enable_no_template:
-            # o usuário pode escolher não aplicar nenhum template, isso por si só já da uma opção para ele
+            # o usuário pode escolher não aplicar nenhum template, isso por si só já da uma a mais para ele
             options = [NO_TEMPLATE_OPTION_LABEL] + template_options
+            selected_template = ui_options(f"Deseja aplicar algum template para {self.dest_path}?", options)
         elif template_options_qty == 1:
             # só tem um template que pode ser aplicado
-            return Template(
-                dest_path=self.dest_path,
-                path=self.templates_path,
-                name=template_options[0]
-            )
+            selected_template = template_options[0]
+        else:
+            selected_template = ui_options(f"Qual template deseja aplicar para {self.dest_path}?", template_options)
         
-        selected_template = ui_options(f"Deseja aplicar algum template para {self.dest_path}?", options)
         if not selected_template or selected_template == NO_TEMPLATE_OPTION_LABEL:
             return None
         
