@@ -1,0 +1,7 @@
+/** ARQUIVO GERADO AUTOMATICAMENTE, NAO MODIFIQUE */
+
+rootProject.name = '{{ project.name }}'
+
+{% for module in project.modules or [] %}
+  include '{{ module.name }}'
+{% endfor %}
