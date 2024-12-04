@@ -1,15 +1,18 @@
 from typing import Dict, Optional
 from file_system import load_yaml
 from project.project_module import ProjectModules
-from project.project_directory import ProjectDirectory, ProjectDirSyncAction
+from project.project_directory import ProjectDirectory, ProjectDirSyncAction, SyncAction
 
 #### TODO criar um modelo de teste descente para isso, deixei esse diretorio com um cenario legal
 
-def callback_fn(sync_action: ProjectDirSyncAction):
+def callback_fn(sync_action: ProjectDirSyncAction, dry_run: bool):
+    print(dry_run)
+    if not sync_action.linked_module or sync_action.action == SyncAction.KEEP:
+        return
     print(f"callback: {sync_action} ")
 
 if __name__ == "__main__":
-    project_base_dir = "/tmp"
+    project_base_dir = "/project/python/project/test_dir/cenario1"
     MODULE_MANIFEST_FILENAME=".gradify.yaml"
 
     # carrega os modulos do arquivo
@@ -31,5 +34,6 @@ if __name__ == "__main__":
     )
     project_dir.synchronize_with_project_modules(
         prj_modules=prj_modules,
-        action_callback=callback_fn
+        action_callback=callback_fn,
+        dry_run=True
     )

@@ -4,9 +4,10 @@ from termcolor import colored
 from typing import Dict
 from enum import Enum
 from typing import List, Callable, Optional
-from ui import print_error, print_info
+from ui import print_info, print_warn, print_error, print_debug
 from dataclasses import dataclass
 from file_system import load_yaml
+from collections import Counter
 from project.project_module import ProjectModules, ProjectModule
 
 # Tipo de acoes que da para fazer
@@ -36,15 +37,17 @@ class ProjectDirSyncAction:
     def update_mid(self, mid: str):
         self.mid = mid
   
-    def rename_to(self, target_name: str, linked_module: ProjectModule):
+    def rename_to(self, target_name: str, linked_module: ProjectModule) -> str:
         self.target_name = target_name
         self.linked_module = linked_module
         self.action = SyncAction.RENAME
+        return target_name
 
-    def keep_current_name(self, linked_module: Optional[ProjectModule] = None):
+    def keep_current_name(self, linked_module: Optional[ProjectModule] = None) -> str:
         self.target_name = self.current_name
         self.linked_module = linked_module
         self.action = SyncAction.KEEP
+        return self.current_name
 
     def __str__(self):
         return f"ProjectDirSyncAction(\n\tcurrent_name={self.current_name}, mid={self.mid}, target_name={self.target_name}, action={self.action}, linked_module={self.linked_module}\n)"
@@ -65,7 +68,9 @@ class ProjectDirectory:
             # diretorios de modulos (chave = nome do diretorio, valor = id (opcional))
             prj_modules: ProjectModules,
             # callback
-            action_callback: Callable[[ProjectDirSyncAction], None] = None
+            action_callback: Callable[[ProjectDirSyncAction, bool], None] = None,
+            # dry run
+            dry_run: bool = False
     ) -> bool:
 
         # verifica a consistência dos dados de módulos (como vamos criar diretórios, não pode haver módulos repetidos)
@@ -134,20 +139,40 @@ class ProjectDirectory:
                 )
             elif prj_dir.target_name != module.name:
                 # o target_name existe, mas não é o mesmo que o nome do modulo, então provavelmente o seu id foi reaproveitado
-                #  para outro, o diretorio sera renomeado e criaremos outro diretorio para esse
-                new_prj_dir = ProjectDirSyncAction(
-                    target_name=module.name,
-                    action=SyncAction.CREATE_NEW,
-                    linked_module=module
-                )
-                directories.append(new_prj_dir)     
+                #  para outro, o seu diretorio sera renomeado e criaremos outro diretorio para esse
+
+                # porem, pode ter uma mudanca de "b" para "a" e "a" para "b", então se antes de mandar criar de fato criar, verifica
+                # se o modulo atual não virou target de outro módulo
+                if not any(dir.target_name == module.name for dir in directories):
+                    new_prj_dir = ProjectDirSyncAction(
+                        target_name=module.name,
+                        action=SyncAction.CREATE_NEW,
+                        linked_module=module
+                    )
+                    directories.append(new_prj_dir)     
 
         # por fim, diretorios sem acao, devem apenas ser mantidos
         for prj_dir in directories:
             if not prj_dir.action:
                 prj_dir.keep_current_name()
 
+        # Verifica se não tem um target name repetido
+        target_names = [dir.target_name for dir in directories]
+        counter = Counter(target_names)
+        duplicates = [name for name, count in counter.items() if count > 1]
+        if duplicates:
+            print_warn("Existem diretórios duplicados...")
+            return False
+
         # executa as ações para sincronizar os diretorios
+        if dry_run:
+            # faz a chamada do callback
+            if not action_callback:
+                return True
+            for action in directories:
+                action_callback(action, dry_run)            
+            return False
+        
         return self.execute_project_dir_sync_actions(
             directories=directories,
             action_callback=action_callback
@@ -157,8 +182,11 @@ class ProjectDirectory:
     def execute_project_dir_sync_actions(
             self, 
             directories: List[ProjectDirSyncAction], 
-            action_callback: Callable[[ProjectDirSyncAction], None] = None
+            action_callback: Callable[[ProjectDirSyncAction, bool], None] = None
     ) -> bool:
+        for prj_dir in directories:
+            print_debug(f"Ação: {prj_dir.action}, {prj_dir.current_name} -> {prj_dir.target_name}, Módulo {prj_dir.linked_module.name if prj_dir.linked_module else 'None'}")
+
         for prj_dir in directories:
             if not prj_dir.action:
                 continue
@@ -168,6 +196,8 @@ class ProjectDirectory:
             elif prj_dir.action == SyncAction.RENAME:
                 # renomeia primeiro para o id unico e depois para o final
                 os.rename(f"{self.project_base_dir}/{prj_dir.current_name}", f"{self.project_base_dir}/{prj_dir.mid}")
+            elif prj_dir.action == SyncAction.KEEP and prj_dir.linked_module is None:
+                self.remove_manifest_file(relative_path=prj_dir.target_name)
 
         for prj_dir in directories:
             if not prj_dir.action:
@@ -189,14 +219,31 @@ class ProjectDirectory:
         if not action_callback:
             return True
         for action in directories:
-            action_callback(action)
+            action_callback(action, False)
         return True
 
-    # cria o arquivo de manifesto
+    def get_manifest_file_path(self, relative_path: str):
+        return os.path.join(f"{self.project_base_dir}/{relative_path}", self.module_manifest_filename)
+
+    # cria o arquivo de manifest
     def create_manifest_file(self, relative_path: str, module_id: str):
-        manifest_file_yaml = os.path.join(f"{self.project_base_dir}/{relative_path}", self.module_manifest_filename)
+        manifest_file_yaml = self.get_manifest_file_path(relative_path=relative_path)
         content = {
             "module_id": module_id
         }
         with open(manifest_file_yaml, 'w') as file:
             yaml.dump(content, file, default_flow_style=False)
+        print_debug(f"Arquivo {manifest_file_yaml} criado.")
+
+    # deleta o arquivo de manifest
+    def remove_manifest_file(self, relative_path: str):
+        manifest_file_yaml = self.get_manifest_file_path(relative_path=relative_path)
+        try:
+            os.remove(manifest_file_yaml)
+            print_debug(f"Arquivo {manifest_file_yaml} removido.")
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            print_error(f"Sem permissão para remover o arquivo '{manifest_file_yaml}'.")
+        except Exception as e:
+            print_error(f"Erro inesperado ao remover o arquivo: {e}")

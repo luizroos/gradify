@@ -21,31 +21,32 @@ RUN apk add --no-cache \
     shadow    
 
 # Baixar e instalar o gosu manualmente
-RUN curl -L https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64 -o /usr/local/bin/gosu && \
+RUN curl -L https://github.com/tianon/gosu/releases/download/1.17/gosu-amd64 -o /usr/local/bin/gosu && \
     chmod +x /usr/local/bin/gosu
-
-# Só se for executar via shell (já que mudou tudo para python, não precisa)
-#RUN apk add --no-cache \
-# JQ: Ferramenta para processar JSON de forma simples e poderosa (TODO ver se precisa ainda)
-#jq \
-# Findutils: Conjunto de ferramentas para pesquisa e manipulação de arquivos no sistema de arquivos, incluindo o 'find' com a opção 'printf' (TODO ver se precisa)
-#findutils \
-#RUN curl -L https://github.com/mikefarah/yq/releases/download/v4.18.1/yq_linux_amd64 -o /usr/bin/yq && \
-#    chmod +x /usr/bin/yq
 
 # Instala Python e as dependencias do python que usamos
 RUN apk add --no-cache \
     python3 \
     py3-pip     \
+    # templating
     py3-jinja2  \
+    # leitura de yamls
     py3-yaml  \
+    # permite mostrar cores no console
     py3-termcolor 
 
 # priorizar a instalacao via apk, deixar para instalar assim só o que não der para ser via apk
 RUN pip3 install --break-system-packages \
+    # toda interface com usuario
     questionary \
+    # para fazer validação de schemas
     cerberus
 
+#RUN apk add --no-cache \
+#    nodejs \
+#    npm
+#
+#RUN npm install -g groovy-beautify
 
 # Diretorio para onde copiamos nossas coisas
 ENV GRADIFY_DIR="/gradify"

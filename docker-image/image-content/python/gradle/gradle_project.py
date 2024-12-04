@@ -2,7 +2,6 @@ import sys
 from typing import Union
 from ui import print_info, print_error
 from file_system import copy_dir_content, load_yaml
-from logger_config import setup_logger
 from system import get_gradify_base_dir
 from template_render import gen_file_from_loaded_template
 from project.project_module import ProjectModules
@@ -10,7 +9,6 @@ from project.project_directory import ProjectDirectory, ProjectDirSyncAction, Sy
 from template_dir.template_dir import TemplateDir
 from termcolor import colored
 
-logger = setup_logger()
 TOOL_NAME="gradle"
 MODULE_MANIFEST_FILENAME=".gradify.yaml"
 
@@ -92,11 +90,12 @@ class GradleProject:
         )
         
     # callback chamado enquando ProjectDirectory ajusta os diretorios
-    def sync_callback(self, sync_action: ProjectDirSyncAction):
+    def sync_callback(self, sync_action: ProjectDirSyncAction, dry_run: bool):
         
-        if not sync_action.linked_module or sync_action.action != SyncAction.CREATE_NEW:
+        if dry_run or not sync_action.linked_module or sync_action.action != SyncAction.CREATE_NEW:
             return
         
+        print_info(f"Criando o módulo... {sync_action.action} {sync_action.linked_module}")
         module = sync_action.linked_module       
         
         # TODO isso tudo aqui poderia ser feito um dia reusando a estrutura de code template
@@ -108,7 +107,6 @@ class GradleProject:
             "src/test",
             "src/test/java",
         ]        
-        # TODO ta criando errado
         module.create_module_directories(self.project_dir, gradle_src_dirs)
 
         # aplica um code template (TODO revisar daqui em diante)
@@ -144,10 +142,12 @@ if __name__ == "__main__":
     print_info("Atualizando os módulos...")
     if not gradleProject.update_modules():
         print_error("Não foi possível atualizar os módulos...")
+        exit()
 
     print_info("Atualizando arquivos do gradle...")
     if not gradleProject.copy_gradle_files():
         print_error("Não foi possível atualizar os arquivos do gradle...")
+        exit()
     
     print_info("Projeto atualizado...")
 

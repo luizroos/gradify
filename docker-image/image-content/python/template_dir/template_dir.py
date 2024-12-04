@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, Optional
 from pathlib import Path
 from file_system import get_sub_directories, copy_dir_content, load_yaml
 from system import get_gradify_base_dir
@@ -36,10 +36,13 @@ class Template:
         if not os.path.isdir(template_data_path):
             logger.error(f"Template {self.name} configurado errado, faltando diretório data...")
             return False
+
+        # copia todos arquivos 
+        copy_dir_content(template_data_path, self.dest_path)
         
         # faz todas as perguntas definidas em var-questions.yaml para o usuario
         var_questions_yaml = load_yaml(f"{template_path}/var-questions.yaml")
-        env_vars = {}
+        env_vars: Dict[str, str] = {}
         if var_questions_yaml is not None:
             for question_data in var_questions_yaml['questions']:
                 var_name = question_data['varName']
@@ -48,11 +51,10 @@ class Template:
                 default_value = question_data.get('defaultValue', '')
                 response = ui_question(question, var_type, str(default_value))
                 env_vars[var_name] = response       
-            # executa os comandos antes de aplicar o template
-            execute_shell_commands(var_questions_yaml['preTemplateScript'], template_data_path, env_vars)
-
-        # copia todos arquivos 
-        copy_dir_content(template_data_path, self.dest_path)
+            # executa os comandos antes de aplicar o template.
+            # o problema ta no working_directory, quando executa no primeiro, a gente move isso para outro diretorio, e ai da ruim 
+            # para executar a segunda vez. Talvez precisa primeiro copiar para o destino e ai aplicar os comandos
+            execute_shell_commands(var_questions_yaml['preTemplateScript'], self.dest_path, env_vars)
 
         for template_file in Path(self.dest_path).rglob("*.j2"):
             if not template_file.is_file():

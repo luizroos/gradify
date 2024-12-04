@@ -1,6 +1,6 @@
 import questionary
-import re
 import sys
+from system import is_debug_mode
 from termcolor import colored
 from logger_config import setup_logger
 from functools import partial
@@ -23,6 +23,10 @@ def print_warn(message: str):
 
 def print_error(message: str):
     _print(colored(message, "red"))
+
+def print_debug(message: str):
+    if is_debug_mode():
+        _print(f"{colored("DEBUG", "red")} {colored(message, "green")}")
 
 def ui_options(question: str, options: any):
     option = questionary.select(
