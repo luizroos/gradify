@@ -1,6 +1,6 @@
 import sys
 from typing import Union
-from ui import print_info, print_error
+from ui import print_info, print_error, print_warn
 from file_system import copy_dir_content, load_yaml
 from system import get_gradify_base_dir
 from template_render import gen_file_from_loaded_template
@@ -72,7 +72,7 @@ class GradleProject:
     # cria todos modulos do projeto gradle
     def update_modules(self) -> bool:
         if not self.project_modules.has_unique_modules():
-            # TODO criar uma classe para lidar com esse arquivo e poder fazer encapsular tudo isso la, 
+            # TODO criar uma classe para lidar com esse arquivo e poder encapsular tudo isso la, 
             # inclusive a criação do objeto project_modules
             print_error("Arquivo de configuração inválido, possui módulos com nomes ou ids duplicados...")
             return False
@@ -95,7 +95,6 @@ class GradleProject:
         if dry_run or not sync_action.linked_module or sync_action.action != SyncAction.CREATE_NEW:
             return
         
-        print_info(f"Criando o módulo... {sync_action.action} {sync_action.linked_module}")
         module = sync_action.linked_module       
         
         # TODO isso tudo aqui poderia ser feito um dia reusando a estrutura de code template
@@ -109,8 +108,6 @@ class GradleProject:
         ]        
         module.create_module_directories(self.project_dir, gradle_src_dirs)
 
-        # aplica um code template (TODO revisar daqui em diante)
-        
         module_templates_path = f"{get_gradify_base_dir()}/{TOOL_NAME}/module-templates"
 
         module_path=module.module_path(self.project_dir)
@@ -127,7 +124,7 @@ class GradleProject:
         if selected_template.apply():
             print_info(f"Template aplicado com sucesso...")
         else:
-            print_info(f"Não foi possível aplicar o template...")
+            print_warn(f"Não foi possível aplicar o template...")
 
 if __name__ == "__main__":
     project_dir = sys.argv[1]
