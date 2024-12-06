@@ -1,8 +1,9 @@
 import sys
+import os
 from typing import Union
 from ui import print_info, print_error, print_warn
 from file_system import copy_dir_content, load_yaml
-from system import get_gradify_base_dir
+from system import get_gradify_tools_dir
 from template_render import gen_file_from_loaded_template
 from project.project_module import ProjectModules
 from project.project_directory import ProjectDirectory, ProjectDirSyncAction, SyncAction
@@ -22,9 +23,9 @@ class GradleProject:
     # modulos do projeto
     project_modules: ProjectModules
 
-    def __init__(self, project_dir: str, prj_config_filename: str):
+    def __init__(self, project_dir: str, prj_config_yaml: str):
         self.project_dir = project_dir
-        self.prj_config_yaml = load_yaml(f"{project_dir}/{prj_config_filename}")
+        self.prj_config_yaml = prj_config_yaml
 
         project_modules = ProjectModules()
         yaml_modules = self.prj_config_yaml['project']['modules']
@@ -35,33 +36,27 @@ class GradleProject:
             )        
         self.project_modules = project_modules
 
+    # aplica o template do projeto
     def apply_project_template(self):
-        # TODO 1) não esta funcionando e 2) pensar o que fazer no update do dia a dia, já que teria que lembrar do template
+        # TODO Não é possivel ter mais de um template, pois esses são justamente os arquivos que queremos
+        # ficar atualizando, a menos que façamos uma alteração no yaml para incluir o template selecionado 
+        # lá
         config_version = self.prj_config_yaml['configVersion']
-        project_template_path=f"{get_gradify_base_dir()}/{TOOL_NAME}/{config_version}/project-templates"
+        project_template_path=f"{get_gradify_tools_dir()}/{TOOL_NAME}/{config_version}/project-templates"
 
         project_template_dir = TemplateDir(
             dest_path=self.project_dir,
             templates_path=project_template_path,
-            enable_no_template=True
+            enable_no_template=False
         )
 
         template = project_template_dir.select_template()
-        template.apply()
+        template.apply_from_yaml_param_file(self.prj_config_yaml)
+        return True
 
     # copia/atualiza os arquivos de configuracao do gradle para dentro do projeto
     def copy_gradle_files(self):
-        if False:
-            self.apply_project_template()
-        else:
-            config_version = self.prj_config_yaml['configVersion']
-
-            project_template_path=f"{get_gradify_base_dir()}/{TOOL_NAME}/{config_version}/project-templates_old"
-
-            copy_dir_content(f"{project_template_path}/gradle-8.11.1", self.project_dir)  
-            self._update_gradle_file(project_template_path, "build.gradle.j2", "build.gradle")
-            self._update_gradle_file(project_template_path, "settings.gradle.j2", "settings.gradle")
-            self._update_gradle_file(project_template_path, "libs.versions.toml.j2", "gradle/libs.versions.toml")
+        self.apply_project_template()
         return True
 
     def _update_gradle_file(self, project_template_path: str, template_file: str, dest_file: str):
@@ -108,7 +103,7 @@ class GradleProject:
         ]        
         module.create_module_directories(self.project_dir, gradle_src_dirs)
 
-        module_templates_path = f"{get_gradify_base_dir()}/{TOOL_NAME}/module-templates"
+        module_templates_path = f"{get_gradify_tools_dir()}/{TOOL_NAME}/module-templates"
 
         module_path=module.module_path(self.project_dir)
         module_template_dir = TemplateDir(
@@ -121,7 +116,7 @@ class GradleProject:
             return
 
         print_info(f"Aplicando template {colored(selected_template.name, attrs=['bold'])}...")
-        if selected_template.apply():
+        if selected_template.apply_from_var_questions_param():
             print_info(f"Template aplicado com sucesso...")
         else:
             print_warn(f"Não foi possível aplicar o template...")
@@ -130,22 +125,28 @@ if __name__ == "__main__":
     project_dir = sys.argv[1]
     prj_config_filename = sys.argv[2]
     
+    prj_config_yaml = load_yaml(f"{project_dir}/{prj_config_filename}")
+    config_version = prj_config_yaml['configVersion']
+    if not os.path.isdir(f"{get_gradify_tools_dir()}/{TOOL_NAME}/{config_version}"):
+        print_error(f"Seu {prj_config_filename} especifica configVersion {config_version} que não é suportado")
+        sys.exit(1)
+
     print_info("Atualizando projeto...")
     gradleProject = GradleProject(
         project_dir=project_dir, 
-        prj_config_filename=prj_config_filename
+        prj_config_yaml=prj_config_yaml
     )
+
+    print_info("Aplicando o template do projeto...")
+    if not gradleProject.apply_project_template():
+        print_error("Não foi possível aplicar o template do projeto...")
+        sys.exit(1)
 
     print_info("Atualizando os módulos...")
     if not gradleProject.update_modules():
         print_error("Não foi possível atualizar os módulos...")
-        exit()
-
-    print_info("Atualizando arquivos do gradle...")
-    if not gradleProject.copy_gradle_files():
-        print_error("Não foi possível atualizar os arquivos do gradle...")
-        exit()
-    
+        sys.exit(1)
+   
     print_info("Projeto atualizado...")
 
         

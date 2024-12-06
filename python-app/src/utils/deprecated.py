@@ -1,5 +1,6 @@
 import warnings
 
+# só para descobrir se metodos ainda são chamados
 def deprecated(func):
     def wrapper(*args, **kwargs):
         warnings.warn(

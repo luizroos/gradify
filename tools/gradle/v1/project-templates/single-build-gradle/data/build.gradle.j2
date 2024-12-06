@@ -1,6 +1,9 @@
 /** ARQUIVO GERADO AUTOMATICAMENTE */
 
 plugins {
+    {% if project.language.type == "java" %}
+        alias(libs.plugins.java)
+    {% endif %}
     {% for plugin in project.plugins or [] %}
         {{ plugin }}
     {% endfor %}
@@ -9,11 +12,13 @@ plugins {
 group = '{{ project.group }}'
 version = '{{ project.version }}'
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of({{ project.language.version | default('21') }})
-	}
-}
+{% if project.language.type == "java" %}
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of({{ project.language.version | default('21') }})
+        }
+    }
+{% endif %}
 
 {# Configuracoes para todos sub projetos #}
 allprojects {
@@ -39,6 +44,9 @@ allprojects {
 
 {# Configuracoes para todos sub projetos #}
 subprojects {
+    {% if project.language.type == "java" %}
+        apply plugin: libs.plugins.java.get().pluginId
+    {% endif %}
     {% if project.subprojects is defined %}
         {% for plugin in project.subprojects.plugins or [] %}
             apply plugin: {{ plugin }}

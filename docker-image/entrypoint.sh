@@ -1,9 +1,8 @@
 #!/bin/bash
-source $GRADIFY_DIR/scripts/functions.sh
 
 # valida que as variaveis foram preenchidas
 if [[ -z "$HOST_USER_UID" || -z "$HOST_USER_GID" ]]; then
-  log_error "missing required env vars."
+  python -m ui print_error "Eu preciso que informe o HOST_USER_UID e HOST_USER_GID"
   exit 1
 fi
 
@@ -21,4 +20,4 @@ chown -R "$HOST_USER_UID":"$HOST_USER_GID" "$GRADIFY_DIR"
 chown -R "$HOST_USER_UID":"$HOST_USER_GID" "/tmp"
 
 # Executa o main com o usuário criado
-exec gosu hostuser $GRADIFY_DIR/scripts/main.sh "$@"
+exec gosu hostuser $GRADIFY_SHELL_SCRIPTS_DIR/main.sh "$@"

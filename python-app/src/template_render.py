@@ -1,10 +1,10 @@
 import os
 import yaml
-from typing import Union
+from typing import Union, Dict
 from jinja2 import Environment, FileSystemLoader
 
-# TODO melhorar isso, tem que entender os tipos e acertar
-def gen_file_from_template2(template_path, params, output_path: str):
+# gera arquivo a partir de um template com parametros vindo de um map
+def gen_file_from_map(template_path, output_path: str, params: Dict[str, str]):
     env = Environment(loader=FileSystemLoader(template_path.parent))
     template = env.get_template(template_path.name)
     with open(output_path, 'w') as f:
@@ -25,7 +25,7 @@ def gen_file_from_loaded_template(template_path: str, output_path: str, yaml_par
     strip_empty_lines(output_path)
 
 # gera template com base num arquivo yaml 
-def gen_file_from_template(template_path: str, output_path: str, yaml_param_file: str):
+def DEP_gen_file_from_template(template_path: str, output_path: str, yaml_param_file: str):
     with open(yaml_param_file, 'r') as f:
         params = yaml.safe_load(f)
     gen_file_from_loaded_template(template_path, output_path, params)
@@ -41,7 +41,3 @@ def strip_empty_lines(file_path):
     # Escreve as linhas não vazias de volta no arquivo
     with open(file_path, 'w') as f:
         f.writelines(non_empty_lines)
-
-
-# Exemplo de uso
-#gen_file_from_template('template.jinja2', 'params.json', 'output.gradle')

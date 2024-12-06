@@ -56,21 +56,13 @@ def ui_question(question: str, q_type: str, default_value: str):
 
 if __name__ == "__main__":
     method = sys.argv[1]
-    out_file_resp = sys.argv[2]
+    message = sys.argv[2]
 
-    response = None
-    if method == 'ui_question':
-        question = sys.argv[3]
-        q_type = sys.argv[4]
-        default_value = sys.argv[5]    
-        response = ui_question(question, q_type, default_value)
-    elif method == 'ui_options':
-        question = sys.argv[3]
-        options = sys.argv[4]        
-        options_list = options.split(",")
-        response = ui_options(question, options_list)
+    if method == 'print_info':
+        print_info(message)
+    elif method == 'print_warn':
+        print_warn(message)
+    elif method == 'print_error':
+        print_error(message)
     else: 
         raise ValueError("Invalid Method!")
-    
-    with open(out_file_resp, 'w') as f:
-        f.write(response.strip())    

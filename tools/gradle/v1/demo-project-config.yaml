@@ -12,7 +12,6 @@ project:
       - spring-boot = "3.4.0"
     plugins:
       - spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
-      - java = { id = "java" }
     libraries:
       - spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
       - spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -21,11 +20,8 @@ project:
   repositories:
     - maven { url 'https://repo.spring.io/milestone' }
   plugins:
-    - alias(libs.plugins.java)
     - alias(libs.plugins.spring.boot) apply false
   subprojects:
-    plugins:
-      - libs.plugins.java.get().pluginId
     dependencies:
       - implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
       - testImplementation libs.spring.boot.starter.test

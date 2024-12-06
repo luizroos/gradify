@@ -6,6 +6,9 @@
 {% endfor %}
 
 [plugins]
+{% if project.language.type == "java" %}
+  java = { id = "java" }
+{% endif %}
 {% for plugin in versionCatalogs.plugins or [] %}
   {{ plugin }}
 {% endfor %}

@@ -18,48 +18,33 @@ RUN apk add --no-cache \
     # Inotify-tools: Ferramentas para monitoramento de alterações em arquivos e diretórios
     inotify-tools \
     # Shadow: Ferramenta que fornece funcionalidades para manipulação de usuários e senhas no sistema, permitindo a criação de usuários não-root
-    shadow    
+    shadow \
+    # python
+    python3 \
+    py3-pip
 
 # Baixar e instalar o gosu manualmente
 RUN curl -L https://github.com/tianon/gosu/releases/download/1.17/gosu-amd64 -o /usr/local/bin/gosu && \
     chmod +x /usr/local/bin/gosu
 
-# Instala Python e as dependencias do python que usamos
-RUN apk add --no-cache \
-    python3 \
-    py3-pip     \
-    # templating
-    py3-jinja2  \
-    # leitura de yamls
-    py3-yaml  \
-    # permite mostrar cores no console
-    py3-termcolor 
-
-# priorizar a instalacao via apk, deixar para instalar assim só o que não der para ser via apk
-RUN pip3 install --break-system-packages \
-    # toda interface com usuario
-    questionary \
-    # para fazer validação de schemas
-    cerberus
-
-#RUN apk add --no-cache \
-#    nodejs \
-#    npm
-#
-#RUN npm install -g groovy-beautify
-
-# Diretorio para onde copiamos nossas coisas
+# Diretorio base onde copiamos nosso código
 ENV GRADIFY_DIR="/gradify"
 RUN mkdir -p $GRADIFY_DIR
 
-# Copiar o conteúdo da imagem para o diretório gradify
-ADD image-content $GRADIFY_DIR
+# Aplicação python
+ENV PYTHONPATH="$GRADIFY_DIR/python-app"
+ADD /python-app/src $PYTHONPATH
+ADD /python-app/requirements.txt $PYTHONPATH/
+RUN pip3 install --no-cache-dir --break-system-packages -r $PYTHONPATH/requirements.txt
 
-# Local onde estao os scripts python
-ENV PYTHONPATH="$GRADIFY_DIR/python"
+# Tipos de ferramentas que lidamos
+ENV GRADIFY_TOOLS_DIR=$GRADIFY_DIR/tools
+ADD /tools $GRADIFY_TOOLS_DIR
 
-# Torna executáveis todos os scripts
-RUN find $GRADIFY_DIR/scripts -type f -name "*.sh" -exec chmod +x {} \;
+# shell scripts
+ENV GRADIFY_SHELL_SCRIPTS_DIR=$GRADIFY_DIR/sh-scripts
+ADD /docker-image/sh-scripts $GRADIFY_SHELL_SCRIPTS_DIR
+RUN find $GRADIFY_SHELL_SCRIPTS_DIR -type f -name "*.sh" -exec chmod +x {} \;
 
 # Diretorio onde o volume projeto do host é montado
 ENV PRJ_HOST_DIR="/project"
@@ -71,7 +56,7 @@ ENV PRJ_CONFIG_FILENAME="project-config.yaml"
 WORKDIR $PRJ_HOST_DIR
 
 # Copiar o entrypoint e torná-lo executável
-COPY entrypoint.sh /entrypoint.sh
+COPY /docker-image/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # informações do build

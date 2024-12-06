@@ -1,15 +1,11 @@
 import os
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Union, Optional
 from pathlib import Path
 from file_system import get_sub_directories, copy_dir_content, load_yaml
-from system import get_gradify_base_dir
-from ui import ui_options, ui_question, print_info
+from ui import ui_options, ui_question, print_error
 from shell import execute_shell_commands
-from logger_config import setup_logger
-from template_render import gen_file_from_template2
-
-logger = setup_logger()
+from template_render import gen_file_from_map, gen_file_from_loaded_template
 
 NO_TEMPLATE_OPTION_LABEL = "Não"
 
@@ -30,11 +26,35 @@ class Template:
     # nome do template
     name: str
 
-    def apply(self) -> bool:
+    # aplica o template com parametros informados do carregamento de um arquivo yaml
+    def apply_from_yaml_param_file(self, yaml_param_file: Union[dict, list]):
         template_path = f"{self.path}/{self.name}"
         template_data_path = f"{template_path}/data"
         if not os.path.isdir(template_data_path):
-            logger.error(f"Template {self.name} configurado errado, faltando diretório data...")
+            print_error(f"Template {self.name} configurado errado, faltando diretório data...")
+            return False
+        
+        # copia todos arquivos 
+        copy_dir_content(template_data_path, self.dest_path)
+
+        for template_file in Path(self.dest_path).rglob("*.j2"):
+            if not template_file.is_file():
+                continue
+        
+            dir_name = template_file.parent
+            base_name = template_file.stem  # Nome do arquivo sem extensão .j2
+            output_file = dir_name / base_name
+
+            gen_file_from_loaded_template(template_file, output_file, yaml_param_file)
+            template_file.unlink()
+        return True        
+
+    # aplica o template com os parametros perguntados no var-questions
+    def apply_from_var_questions_param(self) -> bool:
+        template_path = f"{self.path}/{self.name}"
+        template_data_path = f"{template_path}/data"
+        if not os.path.isdir(template_data_path):
+            print_error(f"Template {self.name} configurado errado, faltando diretório data...")
             return False
 
         # copia todos arquivos 
@@ -64,7 +84,7 @@ class Template:
             base_name = template_file.stem  # Nome do arquivo sem extensão .j2
             output_file = dir_name / base_name
 
-            gen_file_from_template2(template_file, env_vars, output_file)
+            gen_file_from_map(template_file, output_file, env_vars)
             template_file.unlink()
 
         return True

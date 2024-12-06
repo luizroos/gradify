@@ -27,6 +27,7 @@ docker build \
   --build-arg BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')" \
   --build-arg GRADIFY_VERSION=$VERSION \
   --label version=$VERSION \
+  -f docker-image/Dockerfile \
   -t $IMAGE_NAME .
 docker tag $IMAGE_NAME $TAG_NAME
 echo "Imagem $IMAGE_NAME criada!"
