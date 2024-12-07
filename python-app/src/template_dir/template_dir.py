@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Union, Optional
 from pathlib import Path
 from file_system import get_sub_directories, copy_dir_content, load_yaml
@@ -14,7 +14,7 @@ NO_TEMPLATE_OPTION_LABEL = "Não"
 # template-dir/
 #    - data/
 #    - var-questions.yaml
-@dataclass
+@dataclass(frozen=True)
 class Template:
 
     # diretorio onde deve aplicar o template
@@ -90,7 +90,7 @@ class Template:
         return True
 
 
-@dataclass
+@dataclass(frozen=True)
 class TemplateDir:
     
     # diretorio base onde o template sera aplicado

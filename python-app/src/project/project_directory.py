@@ -56,11 +56,14 @@ class ProjectDirSyncAction:
 # Representa o diretório do projeto
 @dataclass(frozen=True)
 class ProjectDirectory:
-    # diretorio base do projeto
-    project_base_dir: str
+    # path do projeto
+    path: str
    
     # arquivo de manifesto
     module_manifest_filename: str
+
+    def get_path(self) -> str:
+        return self.path
 
     # sincroniza o diretório do projeto com a definição de módulos que o projeto tem. Esse método vai atualizar ou criar diretórios novos.
     def synchronize_with_project_modules(
@@ -82,7 +85,7 @@ class ProjectDirectory:
         directories: List[ProjectDirSyncAction] = []
 
         # verifica os diretorios atuais, montando current_name e o id único (pego do arquivo de manifest)
-        for entry in os.scandir(self.project_base_dir):
+        for entry in os.scandir(self.path):
             if not entry.is_dir():
                 continue
 
@@ -113,7 +116,7 @@ class ProjectDirectory:
                         target_name=module.name,
                         linked_module=module
                     )
-            elif not module.directory_exists(self.project_base_dir):
+            elif not module.directory_exists(self.path):
                 # não existe um diretório ainda para esse nome, então criaremos um novo
                 new_prj_dir = ProjectDirSyncAction(
                     target_name=module.name,
@@ -191,11 +194,11 @@ class ProjectDirectory:
             if not prj_dir.action:
                 continue
             if prj_dir.action == SyncAction.CREATE_NEW:
-                os.makedirs(f"{self.project_base_dir}/{prj_dir.target_name}", exist_ok=True)
+                os.makedirs(f"{self.path}/{prj_dir.target_name}", exist_ok=True)
                 print_info(f"Diretório {prj_dir.target_name} {colored("criado", attrs=['bold'])}...")
             elif prj_dir.action == SyncAction.RENAME:
                 # renomeia primeiro para o id unico e depois para o final
-                os.rename(f"{self.project_base_dir}/{prj_dir.current_name}", f"{self.project_base_dir}/{prj_dir.mid}")
+                os.rename(f"{self.path}/{prj_dir.current_name}", f"{self.path}/{prj_dir.mid}")
             elif prj_dir.action == SyncAction.KEEP and prj_dir.linked_module is None:
                 self.remove_manifest_file(relative_path=prj_dir.target_name)
 
@@ -203,7 +206,7 @@ class ProjectDirectory:
             if not prj_dir.action:
                 continue
             if prj_dir.action == SyncAction.RENAME:
-                os.rename(f"{self.project_base_dir}/{prj_dir.mid}", f"{self.project_base_dir}/{prj_dir.target_name}")
+                os.rename(f"{self.path}/{prj_dir.mid}", f"{self.path}/{prj_dir.target_name}")
                 print_info(f"Diretório {prj_dir.current_name} {colored("renomeado", attrs=['bold'])} para {prj_dir.target_name}...")
 
         # cria o arquivo de manifest para todos diretorios que tem um modulo linkado e que o modulo tenha um id
@@ -223,7 +226,7 @@ class ProjectDirectory:
         return True
 
     def get_manifest_file_path(self, relative_path: str):
-        return os.path.join(f"{self.project_base_dir}/{relative_path}", self.module_manifest_filename)
+        return os.path.join(f"{self.path}/{relative_path}", self.module_manifest_filename)
 
     # cria o arquivo de manifest
     def create_manifest_file(self, relative_path: str, module_id: str):

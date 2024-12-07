@@ -49,13 +49,13 @@ fi
 
 # gradifyctl {tool*} update *
 if [[ "$TOOL_COMMAND" == "update" ]]; then
-  python3 -m gradle.gradle_project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME"
+  python3 -m gradle.gradle_project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME" "$GRADIFY_TOOLS_DIR"
   if [ $? -ne 0 ]; then
     exit 0
   fi
   if [[ "$COMMAND_PARAM1" == "keep-alive" ]]; then
     while inotifywait -e modify,move_self "$PRJ_HOST_DIR/$PRJ_CONFIG_FILENAME" 2>/dev/null; do
-      python3 -m gradle.gradle_project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME"
+      python3 -m gradle.gradle_project "$PRJ_HOST_DIR" "$PRJ_CONFIG_FILENAME" "$GRADIFY_TOOLS_DIR"
       if [ $? -ne 0 ]; then
         exit 0
       fi      

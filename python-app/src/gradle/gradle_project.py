@@ -2,28 +2,30 @@ import sys
 import os
 from typing import Union
 from ui import print_info, print_error, print_warn
-from file_system import copy_dir_content, load_yaml
+from file_system import load_yaml
 from system import get_gradify_tools_dir
-from template_render import gen_file_from_loaded_template
 from project.project_module import ProjectModules
 from project.project_directory import ProjectDirectory, ProjectDirSyncAction, SyncAction
-from template_dir.template_dir import TemplateDir
+from tools_dir.tools_dir import ToolsDirectory, ToolDirectory
 from termcolor import colored
 
-TOOL_NAME="gradle"
 MODULE_MANIFEST_FILENAME=".gradify.yaml"
 
 class GradleProject:
+    # diretorio onde estao as configuracoes do graddle
+    tool_dir: ToolDirectory
+
     # arquivo yaml do projeto
     prj_config_yaml: Union[dict, list]
 
     # diretório do projeto
-    project_dir: str
+    project_dir: ProjectDirectory
 
     # modulos do projeto
     project_modules: ProjectModules
 
-    def __init__(self, project_dir: str, prj_config_yaml: str):
+    def __init__(self, project_dir: ProjectDirectory, prj_config_yaml: str, tool_dir: ToolDirectory):
+        self.tool_dir = tool_dir
         self.project_dir = project_dir
         self.prj_config_yaml = prj_config_yaml
 
@@ -42,27 +44,14 @@ class GradleProject:
         # ficar atualizando, a menos que façamos uma alteração no yaml para incluir o template selecionado 
         # lá
         config_version = self.prj_config_yaml['configVersion']
-        project_template_path=f"{get_gradify_tools_dir()}/{TOOL_NAME}/{config_version}/project-templates"
 
-        project_template_dir = TemplateDir(
-            dest_path=self.project_dir,
-            templates_path=project_template_path,
-            enable_no_template=False
+        template = self.tool_dir.get_project_template(
+            dest_path=self.project_dir.get_path(),
+            version=config_version
         )
 
-        template = project_template_dir.select_template()
         template.apply_from_yaml_param_file(self.prj_config_yaml)
         return True
-
-    # copia/atualiza os arquivos de configuracao do gradle para dentro do projeto
-    def copy_gradle_files(self):
-        self.apply_project_template()
-        return True
-
-    def _update_gradle_file(self, project_template_path: str, template_file: str, dest_file: str):
-        template_file_path=f"{project_template_path}/templates/{template_file}"
-        dest_file_path=f"{self.project_dir}/{dest_file}"
-        gen_file_from_loaded_template(template_file_path, dest_file_path, self.prj_config_yaml)
 
     # cria todos modulos do projeto gradle
     def update_modules(self) -> bool:
@@ -72,14 +61,8 @@ class GradleProject:
             print_error("Arquivo de configuração inválido, possui módulos com nomes ou ids duplicados...")
             return False
 
-        # cria o objeto que que representa a diretório do projeto
-        project_directory = ProjectDirectory(
-            project_base_dir=self.project_dir, 
-            module_manifest_filename=MODULE_MANIFEST_FILENAME
-        )
-
         # sincroniza os modulos do projeto com os diretorios, no callback sera notificado o que aconteceu
-        return project_directory.synchronize_with_project_modules(
+        return self.project_dir.synchronize_with_project_modules(
             prj_modules=self.project_modules,
             action_callback=self.sync_callback
         )
@@ -101,22 +84,20 @@ class GradleProject:
             "src/test",
             "src/test/java",
         ]        
-        module.create_module_directories(self.project_dir, gradle_src_dirs)
+        # TODO, ver se da para passar ProjectDir para dentro de module
+        module.create_module_directories(self.project_dir.get_path(), gradle_src_dirs)
 
-        module_templates_path = f"{get_gradify_tools_dir()}/{TOOL_NAME}/module-templates"
-
-        module_path=module.module_path(self.project_dir)
-        module_template_dir = TemplateDir(
-            dest_path=module_path,
-            templates_path=module_templates_path
+        module_path=module.module_path(self.project_dir.get_path())
+        template = self.tool_dir.get_module_template(
+            dest_path=module_path
         )
-        selected_template = module_template_dir.select_template()
-        if not selected_template:
+
+        if not template:
             print_info(f"Não será aplicado nenhum template para {colored(module_path, attrs=['bold'])}...")
             return
 
-        print_info(f"Aplicando template {colored(selected_template.name, attrs=['bold'])}...")
-        if selected_template.apply_from_var_questions_param():
+        print_info(f"Aplicando template {colored(template.name, attrs=['bold'])}...")
+        if template.apply_from_var_questions_param():
             print_info(f"Template aplicado com sucesso...")
         else:
             print_warn(f"Não foi possível aplicar o template...")
@@ -124,16 +105,31 @@ class GradleProject:
 if __name__ == "__main__":
     project_dir = sys.argv[1]
     prj_config_filename = sys.argv[2]
-    
+    tools_path = sys.argv[3]
+
     prj_config_yaml = load_yaml(f"{project_dir}/{prj_config_filename}")
+
+    # diretorio de tools que suportamos
+    tools_directory = ToolsDirectory(
+        path=tools_path
+    )
+    tool_directory = tools_directory.get_tool_dir("gradle")
+
     config_version = prj_config_yaml['configVersion']
-    if not os.path.isdir(f"{get_gradify_tools_dir()}/{TOOL_NAME}/{config_version}"):
+    if not tool_directory.is_valid_version(version=config_version):
         print_error(f"Seu {prj_config_filename} especifica configVersion {config_version} que não é suportado")
         sys.exit(1)
 
+    # cria o objeto que que representa a diretório do projeto
+    project_directory = ProjectDirectory(
+        path=project_dir, 
+        module_manifest_filename=MODULE_MANIFEST_FILENAME
+    )
+
     print_info("Atualizando projeto...")
     gradleProject = GradleProject(
-        project_dir=project_dir, 
+        project_dir=project_directory, 
+        tool_dir=tool_directory,
         prj_config_yaml=prj_config_yaml
     )
 
