@@ -29,12 +29,14 @@ def print_debug(message: str):
         _print(f"{colored("DEBUG", "red")} {colored(message, "green")}")
 
 def ui_options(question: str, options: any):
-    option = questionary.select(
-        message=question,
-        qmark="Gradify",
-        choices=options
-    ).ask()
-    return option
+    while True:
+        option = questionary.select(
+            message=question,
+            qmark="Gradify",
+            choices=options
+        ).ask()
+        if option is not None:
+            return option
 
 def ui_question(question: str, q_type: str, default_value: str):
     if q_type == "boolean":

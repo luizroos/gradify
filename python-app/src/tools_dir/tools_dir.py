@@ -15,7 +15,8 @@ class ToolDirectory:
         
         module_template_dir = TemplateDir(
             dest_path=dest_path,
-            templates_path=module_templates_path
+            templates_path=module_templates_path,
+            enable_no_template=False
         )     
 
         return module_template_dir.select_template()   

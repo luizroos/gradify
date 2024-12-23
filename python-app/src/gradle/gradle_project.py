@@ -74,20 +74,7 @@ class GradleProject:
             return
         
         module = sync_action.linked_module       
-        
-        # TODO isso tudo aqui poderia ser feito um dia reusando a estrutura de code template
-        gradle_src_dirs = [
-            "src",
-            "src/main",
-            "src/main/java",
-            "src/main/resources",
-            "src/test",
-            "src/test/java",
-        ]        
-        # TODO, ver se da para passar ProjectDir para dentro de module
-        module.create_module_directories(self.project_dir.get_path(), gradle_src_dirs)
-
-        module_path=module.module_path(self.project_dir.get_path())
+        module_path=module.get_module_path(self.project_dir.get_path())
         template = self.tool_dir.get_module_template(
             dest_path=module_path
         )
